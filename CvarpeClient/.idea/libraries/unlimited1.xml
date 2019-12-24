@@ -1,0 +1,10 @@
+<component name="libraryTable">
+  <library name="unlimited1">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/out/artifacts/CvarpeClient/bundles/CvarpeClient/runtime/lib/security/policy/unlimited/US_export_policy.jar!/" />
+      <root url="jar://$PROJECT_DIR$/out/artifacts/CvarpeClient/bundles/CvarpeClient/runtime/lib/security/policy/unlimited/local_policy.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
