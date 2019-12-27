@@ -23,6 +23,7 @@ import javafx.util.Callback;
 import java.io.*;
 import java.net.Socket;
 import java.net.URL;
+import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.util.*;
 
@@ -321,12 +322,24 @@ public class MainController implements Initializable {
         shareFlush();
     }
 
-    public void download(ActionEvent actionEvent) throws IOException, ClassNotFoundException {
+    public void download(ActionEvent actionEvent) throws IOException, ClassNotFoundException, NoUserException, NoAccessException, NoFileException, NotBoundException {
         DirectoryChooser directoryChooser = new DirectoryChooser();
         directoryChooser.setTitle("选择下载目录");
         File f = directoryChooser.showDialog(application.getStage());
         if (f == null) return;
         if (simpleMyFileProperty == null) return;
+        if(simpleMyFileProperty.getType().equals("文件夹"))return;
+        SimpleLogListProperty logListProperty = new SimpleLogListProperty(
+                SimpleLogListProperty.TYPE_DOWNLOAD
+                ,simpleMyFileProperty.getName()
+                ,MyDate.getCurTime()
+                ,simpleMyFileProperty.getRsize()
+                ,0
+                ,null
+        );
+        logdata.add(logListProperty);
+        Client.downLoad(idStack.peek(),currentPath.getValueSafe(),simpleMyFileProperty.getName(),f.getAbsolutePath(),logListProperty);
+        /*
         if (simpleMyFileProperty.getType().equals("文件夹")) {
             //System.out.println("233");
             SimpleLogListProperty[] sp = Client.downloadFileDirectory(f.getPath()
@@ -352,6 +365,8 @@ public class MainController implements Initializable {
                     , logListProperty
             );
         }
+
+         */
     }
 
     private void reNameFile(long id,String pos, String name, String newName) throws IOException {

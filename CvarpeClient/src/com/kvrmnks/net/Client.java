@@ -2,16 +2,11 @@ package com.kvrmnks.net;
 
 import com.kvrmnks.data.*;
 import com.kvrmnks.exception.*;
-import sun.net.www.protocol.file.FileURLConnection;
-
 import java.io.*;
-import java.net.Socket;
+import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 
 public class Client {
-    //  private static ObjectInputStream socketIn;
-    //private static ObjectOutputStream socketOut;
-    //   private static Socket socket;
     private static String serverIp;
     private static int port;
     public static Net server;
@@ -50,7 +45,9 @@ public class Client {
         return myFile;
     }
 
-    public static void downLoad(String userName, String pos, String name, File location, String ip, SimpleLogListProperty simpleLogListProperty) throws IOException {
+    public static void downLoad(long id,String pos,String name,String realPos,SimpleLogListProperty simpleLogListProperty) throws IOException, ClassNotFoundException, NoUserException, NoAccessException, NoFileException, NotBoundException {
+        DownLoader downLoader = new DownLoader(id, pos, name, realPos, simpleLogListProperty);
+        new Thread(downLoader).start();
         /*TransData transData = new TransData(userName, pos, name, location.getAbsolutePath(), TransData.TYPE_DOWNLOAD);
 
         TransDataList tmp = new TransDataList(userName);
@@ -130,32 +127,20 @@ public class Client {
     public static void deleteFileDirectory(long id,String pos, String name) throws ClassNotFoundException, NoUserException, NoAccessException, NoFileException, IOException {
         server.deleteFileDirectory(id,pos, name);
     }
-    /*
-     * fileDirectory 要创建文件夹的目录
-     * fileName 要创建的文件夹的名称
-     * */
+
     public static void createFileDirectory(String fileDirectory, String fileName) throws IOException, ClassNotFoundException, NoUserException, NoAccessException, NoFileException, FileExistedException {
         server.createDirectory(fileDirectory, fileName);
     }
+
     public static void createFileDirectory(long id,String fileDirectory, String fileName) throws IOException, ClassNotFoundException, NoUserException, NoAccessException, NoFileException, FileExistedException {
         server.createDirectory(id,fileDirectory, fileName);
     }
 
-    /*
-     * searchFile 搜索文件
-     * fileName 为要搜索的文件子串
-     * */
     public static MyFile[] searchFile(String fileName) throws IOException, ClassNotFoundException, NoFileException, NoAccessException, NoUserException {
         MyFile full = getStructure("Editor^0^/" + UserData.getUserName() + "/");
         return full.search(fileName);
     }
 
-    /*
-     * logup 登录
-     * name 用户名
-     * password 密码
-     * 会自动把输入的密码经过MD5加密之后发送
-     * */
     public static boolean logUp(String name, String password) throws IOException, UserExistedException {
         return server.logUp(name, MD5.getMD5(password));
     }
@@ -164,11 +149,6 @@ public class Client {
         return server.logIn(name, MD5.getMD5(password));
     }
 
-    /*
-     * 下载文件夹
-     * fileLocation 代表文件夹本地地址
-     * panLocation 网盘文件夹位置
-     * */
     public static SimpleLogListProperty[] downloadFileDirectory(
             String fileLocation
             , String panLocation

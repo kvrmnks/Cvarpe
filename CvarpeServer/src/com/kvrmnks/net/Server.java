@@ -41,14 +41,6 @@ public class Server extends UnicastRemoteObject implements Net{
         return false;
     }
 
-    synchronized public void downloadFile(String pos, String name) {
-
-    }
-
-    synchronized public void uploadFile(String pos, String name) {
-
-    }
-
     synchronized public void renameFile(String pos, String name, String newName) throws ClassNotFoundException, NoUserException, NoFileException, IOException, NoAccessException, FileExistedException {
         Disk disk = Disk.constructByUserName(getUserName(pos));
         disk.renameFile(pos, name, newName);
@@ -93,6 +85,12 @@ public class Server extends UnicastRemoteObject implements Net{
         disk.deleteFileDirectory(id,pos, name);
     }
 
+    @Override
+    public void createFile(long id, String pos, String name) throws ClassNotFoundException, NoUserException, NoFileException, IOException, NoAccessException, FileExistedException {
+        Disk disk = Disk.constructByUserName(getUserName(pos));
+        disk.createFile(id,pos,name);
+    }
+
     synchronized public void createDirectory(String pos, String name) throws NoUserException, NoFileException, ClassNotFoundException, NoAccessException, FileExistedException, IOException {
         Disk disk = Disk.constructByUserName(getUserName(pos));
         disk.createFileDirectory(pos, name);
@@ -105,31 +103,56 @@ public class Server extends UnicastRemoteObject implements Net{
         disk.createFileDirectory(id,pos, name);
     }
 
-
     @Override
     synchronized public MyFile getStructure(long id,String pos) throws ClassNotFoundException, NoUserException, NoFileException, IOException, NoAccessException {
         Disk disk = Disk.constructByUserName(getUserName(pos));
         return disk.getFileById(pos,id);
     }
 
+    @Override
     synchronized public MyFile getStructure(String s) throws NoUserException, NoFileException, ClassNotFoundException, NoAccessException, IOException {
         Disk disk = Disk.constructByUserName(getUserName(s));
         return disk.getStructure(s);
 
     }
 
-    synchronized public int readByteOfFile(String pos,String name,byte[] buffer,int begin,int length) throws ClassNotFoundException, NoUserException, NoFileException, IOException, NoAccessException {
+
+    @Override
+    synchronized public int readByteOfFile(long id, String pos, String name, byte[] buffer, int begin, int length) throws ClassNotFoundException, NoUserException, NoFileException, IOException, NoAccessException {
         Disk disk = Disk.constructByUserName(getUserName(pos));
-        return disk.readByteOfFile(pos,name,buffer,begin,length);
+        return disk.readByteOfFile(id,pos,name,buffer,begin,length);
     }
 
-    synchronized public void writeByteOfFile(String pos,String name,long size,String md5,byte[] buffer,int begin,int length) throws ClassNotFoundException, NoUserException, NoFileException, IOException, NoAccessException, FileExistedException {
+    @Override
+    synchronized public void writeByteOfFile(String pos,String name,long size,String md5,byte[] buffer,int begin,int length) throws RemoteException,ClassNotFoundException, NoUserException, NoFileException, IOException, NoAccessException, FileExistedException {
         Disk disk = Disk.constructByUserName(getUserName(pos));
         disk.writeByteOfFile(pos,name,size,md5,buffer,begin,length);
     }
 
     @Override
-    public MyFile getFile(String pos, String name) throws ClassNotFoundException, NoUserException, NoFileException, IOException, NoAccessException {
+    public InfoFile getInfoFile(long id, String pos, String name) throws ClassNotFoundException, NoUserException, NoFileException, IOException, NoAccessException, FileStructureException {
+        Disk disk = Disk.constructByUserName(getUserName(pos));
+        return disk.getInfoFile(id,pos,name);
+    }
+
+    @Override
+    public void writeInfoFile(long id, String pos, String name, InfoFile infoFile) throws ClassNotFoundException, NoUserException, NoFileException, IOException, NoAccessException {
+        Disk disk = Disk.constructByUserName(getUserName(pos));
+        disk.writeInfoFile(id,pos,name,infoFile);
+    }
+
+
+    @Override
+    synchronized public String getMd5OfFile(long id, String pos, String name) throws ClassNotFoundException, NoUserException, NoAccessException, NoFileException, IOException {
+        MyFile file = getStructure(id, pos);
+        if(!file.sonFile.containsKey(name))
+            throw new NoFileException();
+        file = file.sonFile.get(name);
+        return MD5.getMD5OfFile(RealDisk.LOCATION+"__"+file.getId()+"__"+file.getName());
+    }
+
+    @Override
+    synchronized public MyFile getFile(String pos, String name) throws ClassNotFoundException, NoUserException, NoFileException, IOException, NoAccessException {
         Disk disk = Disk.constructByUserName(pos);
         MyFile myFile = disk.getStructure(pos);
         if(!myFile.sonFile.containsKey(name))
@@ -138,7 +161,7 @@ public class Server extends UnicastRemoteObject implements Net{
     }
 
     @Override
-    public MyFile getFileDirectory(String pos, String name) throws ClassNotFoundException, NoUserException, NoFileException, IOException, NoAccessException {
+    synchronized public MyFile getFileDirectory(String pos, String name) throws ClassNotFoundException, NoUserException, NoFileException, IOException, NoAccessException {
         Disk disk = Disk.constructByUserName(pos);
         MyFile myFile = disk.getStructure(pos);
         if(!myFile.sonDirectory.containsKey(name))
@@ -147,74 +170,35 @@ public class Server extends UnicastRemoteObject implements Net{
     }
 
     @Override
-    public TransDataList getTransDataList(String userName) throws NoSuchUserException {
+    synchronized public TransDataList getTransDataList(String userName) throws NoSuchUserException {
         return DataBase.getTransDataListByName(userName);
     }
 
     @Override
-    public String getReadOnlyURL(long id, String pos) {
+    synchronized public String getReadOnlyURL(long id, String pos) {
         return "Viewer^0^$"+pos+":"+id;
     }
 
     @Override
-    public String getReadAndWriteURL(long id, String pos) {
+    synchronized public String getReadAndWriteURL(long id, String pos) {
         return "Editor^0^$"+pos+":"+id;
     }
 
     @Override
-    public String getTempReadOnlyURL(long id, String pos) {
+    synchronized public String getTempReadOnlyURL(long id, String pos) {
         return "PreViewer^"+MyDate.getNowTimeStamp()+"^$"+pos+":"+id;
     }
 
     @Override
-    public String getTempReadAndWriteURL(long id, String pos) {
+    synchronized public String getTempReadAndWriteURL(long id, String pos) {
         return "PreEditor^"+MyDate.getNowTimeStamp()+"^$"+pos+":"+id;
     }
 
     @Override
-    public String createReadAndWriteFileURL(String pos, String name) {
-        return null;
-    }
-
-    @Override
-    public String createReadAndWriteFileDirectoryURL(String pos, String name) {
-        return null;
-    }
-
-    @Override
-    public String createReadOnlyFileURL(String pos, String name) {
-        return null;
-    }
-
-    @Override
-    public String createReadOnlyFileDirectoryURL(String pos, String name) {
-        return null;
-    }
-
-    @Override
-    public String createTempReadAndWriteFileURL(String pos, String name) {
-        return null;
-    }
-
-    @Override
-    public String createTempReadAndWriteFileDirectoryURL(String pos, String name) {
-        return null;
-    }
-
-    @Override
-    public String createTempReadOnlyFileURL(String pos, String name) {
-        return null;
-    }
-
-    @Override
-    public String createTempReadOnlyFileDirectoryURL(String pos, String name) throws RemoteException {
-        return null;
-    }
-
-    @Override
-    public void modifyTransDataList(String userName, TransDataList transDataList) throws NoUserException {
+    synchronized public void modifyTransDataList(String userName, TransDataList transDataList) throws NoUserException {
         DataBase.setTransDataList(userName,transDataList);
     }
+
 
 
 }

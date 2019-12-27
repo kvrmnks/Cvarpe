@@ -2,6 +2,7 @@ package com.kvrmnks.UI;
 
 import com.kvrmnks.Main;
 import com.kvrmnks.data.MyDialog;
+import com.kvrmnks.data.UserData;
 import com.kvrmnks.exception.Log;
 import com.kvrmnks.net.Client;
 import com.kvrmnks.net.Net;
@@ -36,6 +37,7 @@ public class ConnectController implements Initializable {
             String ip = ipTextField.getText();
             int port = Integer.parseInt(portTextField.getText());
             Net tmp = (Net) Naming.lookup("rmi://"+ip+":"+port+"/"+"Server");
+            UserData.setIp("rmi://"+ip+":"+port+"/"+"Server");
             Client.setServerIp(ip);
             Client.setPort(port);
             Client.setNet(tmp);

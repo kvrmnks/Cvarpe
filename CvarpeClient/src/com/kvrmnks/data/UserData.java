@@ -1,8 +1,9 @@
 package com.kvrmnks.data;
 
 public class UserData {
-    public static String userName;
-    public static String userPassword;
+    private static String userName;
+    private static String userPassword;
+    private static String ip;
 
     public static String getUserName() {
         return userName;
@@ -18,5 +19,13 @@ public class UserData {
 
     public static void setUserPassword(String userPassword) {
         UserData.userPassword = userPassword;
+    }
+
+    public static void setIp(String ip){
+        UserData.ip = ip;
+    }
+
+    public static String getIp(){
+        return ip;
     }
 }

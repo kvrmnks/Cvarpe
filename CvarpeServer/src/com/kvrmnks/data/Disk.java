@@ -1,9 +1,6 @@
 package com.kvrmnks.data;
 
-import com.kvrmnks.exception.FileExistedException;
-import com.kvrmnks.exception.NoAccessException;
-import com.kvrmnks.exception.NoFileException;
-import com.kvrmnks.exception.NoUserException;
+import com.kvrmnks.exception.*;
 
 import java.io.*;
 import java.util.Scanner;
@@ -250,16 +247,15 @@ public class Disk {
         return userName;
     }
 
-    synchronized public int readByteOfFile(String pos, String name, byte[] buffer, int begin, int length) throws NoAccessException, NoFileException, IOException {
+    synchronized public int readByteOfFile(long id,String pos, String name, byte[] buffer, int begin, int length) throws NoAccessException, NoFileException, IOException {
         if (!canRead(pos))
             throw new NoAccessException();
-        //pos = getRealPos(pos);
-        getFileId(pos, name);
-        MyFile myFile = getStructure(pos);
+        MyFile myFile = getStructure(id,pos);
         myFile = myFile.sonFile.get(name);
         return RealDisk.readByteOfFile(myFile, buffer, begin, length);
     }
 
+    @Deprecated
     synchronized public void writeByteOfFile(String pos, String name, long size, String Md5, byte[] buffer, int begin, int length) throws NoAccessException, NoFileException, FileExistedException, IOException {
         if (!canWrite(pos))
             throw new NoAccessException();
@@ -292,6 +288,63 @@ public class Disk {
         bufferedOutputStream.close();
     }
 
+    synchronized public InfoFile getInfoFile(long id,String pos,String name) throws NoAccessException, NoFileException, IOException, FileStructureException {
+        if (!canRead(pos))
+            throw new NoAccessException();
+        MyFile myFile = getStructure(id,pos);
+        if(!myFile.sonFile.containsKey(name))
+            throw new NoFileException();
+        myFile = myFile.sonFile.get(name);
+        File file = new File(RealDisk.LOCATION + "__" + myFile.getId()+"__"+myFile.getName());
+        Scanner scan = new Scanner(file);
+        InfoFile infoFile = new InfoFile();
+        if(scan.hasNext()){
+            infoFile.setMd5(scan.next());
+        }else{
+            throw new FileStructureException();
+        }
+        if(scan.hasNextLong()){
+            infoFile.setSize(scan.nextLong());
+        }else{
+            throw new FileStructureException();
+        }
+        mainTain();
+        return infoFile;
+    }
+
+    public void writeInfoFile(long id, String pos, String name, InfoFile infoFile) throws NoAccessException, NoFileException, IOException {
+        if(!canWrite(pos))
+            throw new NoAccessException();
+        MyFile myFile = getStructure(id,pos);
+        if(!myFile.sonFile.containsKey(name))
+            throw new NoFileException();
+        myFile = myFile.sonFile.get(name);
+        File file = new File(RealDisk.LOCATION+"__"+myFile.getId()+"__"+myFile.getName());
+        if(file.exists()){
+            file.delete();
+            file.createNewFile();
+        }
+        PrintWriter pw = new PrintWriter(new FileOutputStream(file));
+        pw.println(infoFile.getMd5());
+        pw.println(infoFile.getSize());
+        pw.flush();
+        pw.close();
+        mainTain();
+    }
+
+    @Deprecated
+    synchronized public void println(long id,String pos,String name,String content) throws NoAccessException, NoFileException, IOException {
+        MyFile myFile = getStructure(id,pos);
+        if(!myFile.sonFile.containsKey(name))
+            throw new NoFileException();
+        myFile = myFile.sonFile.get(name);
+        PrintWriter out = new PrintWriter(new FileOutputStream(new File(RealDisk.LOCATION+"__"+myFile.getId()+"__"+myFile.getName())));
+        out.println(content);
+        out.flush();
+        out.close();
+        mainTain();
+    }
+
     synchronized public MyFile getFileById(String pos, long id) throws NoAccessException, NoFileException {
         if (!canRead(pos))
             throw new NoAccessException();
@@ -303,4 +356,6 @@ public class Disk {
         }
         throw new NoFileException();
     }
+
+
 }
