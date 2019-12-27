@@ -37,6 +37,7 @@
                                                 <MenuItem fx:id="removeMenuItem" mnemonicParsing="false" onAction="#delete" text="删除" />
                                                 <MenuItem fx:id="bindMenuItem" mnemonicParsing="false" onAction="#binding" text="绑定" />
                                                 <MenuItem fx:id="newFileDirectoryMenuList" mnemonicParsing="false" onAction="#newFileDirectory" text="新建文件夹" />
+                                                <MenuItem fx:id="getSharedListMenuList" mnemonicParsing="false" onAction="#getSharedList" text="创建分享链接" />
                                             </items>
                                         </ContextMenu>
                                     </contextMenu>
@@ -49,7 +50,7 @@
                                         <Button fx:id="backForwardButton" mnemonicParsing="false" onAction="#backForward" text="后退" />
                                         <TextField fx:id="pathTextField" editable="false" />
                                         <Button fx:id="uploadButton" mnemonicParsing="false" onAction="#upload" text="上传文件" />
-                              <Button fx:id="uploadFileDirectoryButton" mnemonicParsing="false" onAction="#uploadFileDirectory" text="上传文件夹" />
+                                        <Button fx:id="uploadFileDirectoryButton" mnemonicParsing="false" onAction="#uploadFileDirectory" text="上传文件夹" />
                                     </items>
                                 </ToolBar>
                             </top>
@@ -98,51 +99,53 @@
                     </content>
                 </Tab>
                 <Tab text="绑定">
-               <content>
-                  <TableView prefHeight="200.0" prefWidth="200.0">
-                    <columns>
-                      <TableColumn prefWidth="93.66665649414062" text="网盘文件夹" />
-                      <TableColumn prefWidth="107.0" text="真实文件夹" />
-                    </columns>
-                  </TableView>
-               </content></Tab>
-                <Tab text="分享">
-               <content>
-                  <BorderPane prefHeight="200.0" prefWidth="200.0">
-                     <top>
-                        <ToolBar prefHeight="40.0" prefWidth="200.0" BorderPane.alignment="CENTER">
-                          <items>
-                              <ComboBox prefHeight="23.0" prefWidth="363.0" />
-                            <Button mnemonicParsing="false" prefHeight="23.0" prefWidth="41.0" text="跳转" />
-                              <Button mnemonicParsing="false" text="后退" />
-                              <Button mnemonicParsing="false" text="添加" />
-                          </items>
-                        </ToolBar>
-                     </top>
-                     <center>
-                        <TableView prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER">
-                           <contextMenu>
-                              <ContextMenu fx:id="contextMenu1">
-                                 <items>
-                                    <MenuItem fx:id="openMenuItem1" mnemonicParsing="false" onAction="#open" text="打开" />
-                                    <MenuItem fx:id="downLoadMenuItem1" mnemonicParsing="false" onAction="#download" text="下载" />
-                                    <MenuItem fx:id="renameMenuItem1" mnemonicParsing="false" onAction="#reName" text="重命名" />
-                                    <MenuItem fx:id="removeMenuItem1" mnemonicParsing="false" onAction="#delete" text="删除" />
-                                    <MenuItem fx:id="bindMenuItem1" mnemonicParsing="false" onAction="#binding" text="绑定" />
-                                    <MenuItem fx:id="newFileDirectoryMenuList1" mnemonicParsing="false" onAction="#newFileDirectory" text="新建文件夹" />
-                                 </items>
-                              </ContextMenu>
-                           </contextMenu>
-                           <columns>
-                              <TableColumn prefWidth="75.0" text="文件类型" />
-                              <TableColumn prefWidth="75.0" text="文件名" />
-                              <TableColumn prefWidth="75.0" text="文件大小" />
-                              <TableColumn prefWidth="99.66668701171875" text="文件修改时间" />
-                           </columns>
+                    <content>
+                        <TableView prefHeight="200.0" prefWidth="200.0">
+                            <columns>
+                                <TableColumn prefWidth="93.66665649414062" text="网盘文件夹" />
+                                <TableColumn prefWidth="107.0" text="真实文件夹" />
+                            </columns>
                         </TableView>
-                     </center>
-                  </BorderPane>
-               </content></Tab>
+                    </content>
+                </Tab>
+                <Tab text="分享">
+                    <content>
+                        <BorderPane prefHeight="200.0" prefWidth="200.0">
+                            <top>
+                                <ToolBar prefHeight="40.0" prefWidth="200.0" BorderPane.alignment="CENTER">
+                                    <items>
+                                        <ComboBox fx:id="shareListChooser" prefHeight="23.0" prefWidth="363.0" />
+                                        <Button fx:id="shareListJumpButton" mnemonicParsing="false" onAction="#shareJump" prefHeight="23.0" prefWidth="41.0" text="跳转" />
+                                        <Button fx:id="shareListAddButton" mnemonicParsing="false" onAction="#shareAdd" text="添加" />
+                                        <Button fx:id="shareListBackButton" mnemonicParsing="false" onAction="#shareBack" text="后退" />
+                                    </items>
+                                </ToolBar>
+                            </top>
+                            <center>
+                                <TableView fx:id="shareListTableView" prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER">
+                                    <contextMenu>
+                                        <ContextMenu fx:id="contextMenu1">
+                                            <items>
+                                                <MenuItem fx:id="shareOpen" mnemonicParsing="false" onAction="#shareOpen" text="打开" />
+                                                <MenuItem fx:id="shareDownload" mnemonicParsing="false" onAction="#shareDownload" text="下载" />
+                                                <MenuItem fx:id="shareRename" mnemonicParsing="false" onAction="#shareRename" text="重命名" />
+                                                <MenuItem fx:id="shareRemove" mnemonicParsing="false" onAction="#shareRemove" text="删除" />
+                                                <MenuItem fx:id="shareBind" mnemonicParsing="false" onAction="#shareBind" text="绑定" />
+                                                <MenuItem fx:id="shareNewDirectory" mnemonicParsing="false" onAction="#shareNewFileDirectory" text="新建文件夹" />
+                                            </items>
+                                        </ContextMenu>
+                                    </contextMenu>
+                                    <columns>
+                                        <TableColumn fx:id="shareListTypeColumn" prefWidth="75.0" text="文件类型" />
+                                        <TableColumn fx:id="shareListNameColumn" prefWidth="75.0" text="文件名" />
+                                        <TableColumn fx:id="shareListSizeColumn" prefWidth="75.0" text="文件大小" />
+                                        <TableColumn fx:id="shareListTimeColumn" prefWidth="99.66668701171875" text="文件修改时间" />
+                                    </columns>
+                                </TableView>
+                            </center>
+                        </BorderPane>
+                    </content>
+                </Tab>
             </tabs>
         </TabPane>
     </center>

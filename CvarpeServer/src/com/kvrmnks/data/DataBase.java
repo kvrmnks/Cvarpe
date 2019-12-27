@@ -20,12 +20,17 @@ public class DataBase {
 
     private static HashMap<String, TransDataList> transData;
 
-    private static final String TRANS_DATA = "transData.db";
+    private static final String USERDB = "__userDB__.db";
+    private static final String FILEDB = "__fileDB__.db";
+    private static final String ROOTDB = "__rootDB__.db";
+    private static final String FILECOUNT = "__fileCount__.db";
+    private static final String TRANS_DATA = "__transData__.db";
+
 
     private static long fileCount;
 
     static {
-        File file = new File("__userDB__.db");
+        File file = new File(USERDB);
         if (file.exists()) {
             try {
                 userDB = (HashMap<String, String>) new ObjectInputStream(new FileInputStream(file)).readObject();
@@ -36,7 +41,7 @@ public class DataBase {
             userDB = new HashMap<>();
         }
 
-        file = new File("__fileDB__.db");
+        file = new File(FILEDB);
         if (file.exists()) {
             try {
                 fileDB = (HashMap<Long, String>) new ObjectInputStream(new FileInputStream(file)).readObject();
@@ -47,7 +52,7 @@ public class DataBase {
             fileDB = new HashMap<>();
         }
 
-        file = new File("__rootDB__.db");
+        file = new File(ROOTDB);
         if (file.exists()) {
             try {
                 rootDB = (HashMap<String, Long>) new ObjectInputStream(new FileInputStream(file)).readObject();
@@ -58,7 +63,7 @@ public class DataBase {
             rootDB = new HashMap<>();
         }
 
-        file = new File("__fileCount__.db");
+        file = new File(FILECOUNT);
         if (file.exists()) {
             try {
                 fileCount = (Long) new ObjectInputStream(new FileInputStream(file)).readObject();
@@ -88,7 +93,7 @@ public class DataBase {
     }
 
     public static void wirteUserDB() {
-        File file = new File("__userDB__.db");
+        File file = new File(USERDB);
         try {
             new ObjectOutputStream(new FileOutputStream(file)).writeObject(userDB);
         } catch (IOException e) {
@@ -97,7 +102,7 @@ public class DataBase {
     }
 
     public static void wirteFileDB() {
-        File file = new File("__fileDB__.db");
+        File file = new File(FILEDB);
         try {
             new ObjectOutputStream(new FileOutputStream(file)).writeObject(fileDB);
         } catch (IOException e) {
@@ -106,7 +111,7 @@ public class DataBase {
     }
 
     public static void writeRootDB() {
-        File file = new File("__rootDB__.db");
+        File file = new File(ROOTDB);
         try {
             new ObjectOutputStream(new FileOutputStream(file)).writeObject(rootDB);
         } catch (IOException e) {
@@ -115,7 +120,7 @@ public class DataBase {
     }
 
     public static void writeFileCountDB() {
-        File file = new File("__fileCount__.db");
+        File file = new File(FILECOUNT);
         try {
             new ObjectOutputStream(new FileOutputStream(file)).writeObject(fileCount);
         } catch (IOException e) {
@@ -150,7 +155,7 @@ public class DataBase {
         myFile.setId(getCount());
         myFile.setType(MyFile.TYPEFILEDERECTORY);
         myFile.setName(user.getName());
-
+        myFile.setModifyTime(MyDate.getCurTime());
         RealDisk.writeMyFile(myFile, myFile.getId(), myFile.getName() + ".db");
         fileDB.put(myFile.getId(), myFile.getName());
         rootDB.put(user.getName(), myFile.getId());

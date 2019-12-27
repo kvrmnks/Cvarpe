@@ -23,8 +23,8 @@ import javafx.util.Callback;
 import java.io.*;
 import java.net.Socket;
 import java.net.URL;
-import java.util.Collections;
-import java.util.ResourceBundle;
+import java.rmi.RemoteException;
+import java.util.*;
 
 public class MainController implements Initializable {
     public TableView<SimpleMyFileProperty> fileTableView;
@@ -57,14 +57,32 @@ public class MainController implements Initializable {
     public TableView<SimpleMyFileProperty> searchTableView;
     public TableView<SimpleLogListProperty> logTableView;
     public Button uploadFileDirectoryButton;
+    public MenuItem getSharedListMenuList;
+    public ComboBox<String> shareListChooser;
+    public Button shareListJumpButton;
+    public Button shareListAddButton;
+    public Button shareListBackButton;
+    public TableColumn shareListTypeColumn;
+    public TableColumn shareListNameColumn;
+    public TableColumn shareListSizeColumn;
+    public TableColumn shareListTimeColumn;
+    public TableView shareListTableView;
+    public MenuItem shareOpen;
+    public MenuItem shareDownload;
+    public MenuItem shareRename;
+    public MenuItem shareRemove;
+    public MenuItem shareBind;
+    public MenuItem shareNewDirectory;
     private Main application;
-    //private Client client;
     private ObservableList<SimpleMyFileProperty> data = FXCollections.observableArrayList();
     private ObservableList<SimpleMyFileProperty> searchResult = FXCollections.observableArrayList();
     private ObservableList<SimpleLogListProperty> logdata = FXCollections.observableArrayList();
-    private SimpleMyFileProperty simpleMyFileProperty;
-    //private String currentPath = "";
+    private ObservableList<SimpleMyFileProperty> shareList = FXCollections.observableArrayList();
+    private SimpleMyFileProperty simpleMyFileProperty,shareMyFileProperty;
     private SimpleStringProperty currentPath;
+    private Stack<Long> idStack = new Stack<>();
+    private Stack<Long> shareIdStack = new Stack<>();
+    private String curShareURL = "";
 
     private void initFileTab() {
         fileTypeTableColumn.setCellValueFactory(new PropertyValueFactory<>("type"));
@@ -172,7 +190,7 @@ public class MainController implements Initializable {
         });
         modifyTimeTableColumn.setCellValueFactory(new PropertyValueFactory<>("time"));
         logTableView.setItems(logdata);
-       // try {
+        // try {
           /*  TransDataList transDataList = DataBase.getTransDataListByName(UserData.getUserName());
             TransData[] transData = transDataList.toArray();
             for(TransData x : transData){
@@ -189,16 +207,53 @@ public class MainController implements Initializable {
             }
 
            */
-      //  } catch (NoSuchUserException ignored) {}
+        //  } catch (NoSuchUserException ignored) {}
 
     }
 
+    private void initShareTab(){
+        shareListTypeColumn.setCellValueFactory(new PropertyValueFactory<>("type"));
+        shareListNameColumn.setCellValueFactory(new PropertyValueFactory<>("name"));
+        shareListSizeColumn.setCellValueFactory(new PropertyValueFactory<>("size"));
+        shareListTimeColumn.setCellValueFactory(new PropertyValueFactory<>("modifyTime"));
+        shareListTableView.setItems(shareList);
+        shareListTableView.setRowFactory(new Callback<TableView<SimpleMyFileProperty>, TableRow<SimpleMyFileProperty>>() {
+            @Override
+            public TableRow<SimpleMyFileProperty> call(TableView<SimpleMyFileProperty> param) {
+                TableRow<SimpleMyFileProperty> row = new TableRow<>();
+                row.setOnMouseClicked(new EventHandler<MouseEvent>() {
+                    @Override
+                    public void handle(MouseEvent event) {
+                        if (event.getClickCount() == 2) {
+                            TableRow<SimpleMyFileProperty> r = (TableRow<SimpleMyFileProperty>) event.getSource();
+                            shareMyFileProperty = r.getItem();
+                            try {
+                                //open(null);
+                                shareOpen(null);
+                            } catch (IOException | ClassNotFoundException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                        if (event.getButton() == MouseButton.SECONDARY) {
+                            //contextMenu.show(fileTableView, event.getScreenX(), event.getScreenY());
+                            TableRow<SimpleMyFileProperty> r = (TableRow<SimpleMyFileProperty>) event.getSource();
+                            //setSimpleMyFileProperty(r.getItem());
+                            shareMyFileProperty = r.getItem();
+                        }
+                    }
+                });
+
+                return row;
+            }
+        });
+    }
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         currentPath = new SimpleStringProperty("Editor^0^/" + UserData.getUserName() + "/");
         initFileTab();
         initSearchTab();
         initLogTab();
+        initShareTab();;
     }
 
     void setSimpleMyFileProperty(SimpleMyFileProperty viewMyFile) {
@@ -209,38 +264,61 @@ public class MainController implements Initializable {
         application = app;
     }
 
-    public void init() throws IOException, ClassNotFoundException {
-        pathTextField.textProperty().bindBidirectional(currentPath);
-        flush();
-    }
+    public void init() {
+        try {
+            idStack.push(Client.getStructure(currentPath.getValueSafe()).getId());
+            pathTextField.textProperty().bindBidirectional(currentPath);
+            flush();
+        } catch (ClassNotFoundException | NoUserException | NoAccessException | NoFileException | IOException e) {
+            e.printStackTrace();
+        }
 
-   /* public void setClient(Socket s, ObjectInputStream dis, ObjectOutputStream dos) {
-        Client.setClient(dis, dos, s);
-    }
 
-    */
+    }
 
 
     public void flush() throws IOException, ClassNotFoundException {
         data.clear();
         MyFile file = null;
         try {
-            file = Client.getStructure(currentPath.getValueSafe());
+            file = Client.getStructure(idStack.peek(), currentPath.getValueSafe());
         } catch (NoUserException | NoAccessException | NoFileException e) {
             e.printStackTrace();
         }
+       // data.add(new SimpleMyFileProperty(file));
         MyFile[] files = file.getCurrentFileList();
         for (MyFile mf : files) {
             data.add(new SimpleMyFileProperty(mf));
         }
     }
 
+    public void shareFlush() throws IOException, ClassNotFoundException {
+        shareList.clear();
+        MyFile file = null;
+        try {
+            file = Client.getStructure(shareIdStack.peek(),curShareURL);
+        } catch (NoUserException | NoAccessException | NoFileException e) {
+            e.printStackTrace();
+        }
+        // data.add(new SimpleMyFileProperty(file));
+        MyFile[] files = file.getCurrentFileList();
+        for (MyFile mf : files) {
+            shareList.add(new SimpleMyFileProperty(mf));
+        }
+    }
     public void open(ActionEvent actionEvent) throws IOException, ClassNotFoundException {
         if (simpleMyFileProperty == null) return;
-        if (simpleMyFileProperty.getType().equals("文件夹")) {
-            currentPath.setValue(currentPath.getValueSafe() + simpleMyFileProperty.getName() + "/");
-            flush();
-        }
+        if(simpleMyFileProperty.getId() == idStack.peek()) return;
+        currentPath.setValue(currentPath.getValueSafe() + simpleMyFileProperty.getName() + "/");
+        idStack.push(simpleMyFileProperty.getId());
+        flush();
+    }
+
+    public void shareOpen(ActionEvent actionEvent) throws IOException, ClassNotFoundException {
+        if(shareMyFileProperty == null) return;
+        if(shareMyFileProperty.getId() == shareIdStack.peek())return;
+        shareIdStack.push(shareMyFileProperty.getId());
+        shareFlush();
     }
 
     public void download(ActionEvent actionEvent) throws IOException, ClassNotFoundException {
@@ -267,7 +345,7 @@ public class MainController implements Initializable {
 
             Client.downLoad(
                     UserData.getUserName()
-                    ,currentPath.getValueSafe()
+                    , currentPath.getValueSafe()
                     , simpleMyFileProperty.getName()
                     , f.getAbsoluteFile()
                     , Client.getServerIp()
@@ -276,9 +354,9 @@ public class MainController implements Initializable {
         }
     }
 
-    private void reNameFile(String pos, String name, String newName) throws IOException {
+    private void reNameFile(long id,String pos, String name, String newName) throws IOException {
         try {
-            Client.reNameFile(pos, name, newName);
+            Client.reNameFile(id,pos, name, newName);
             Log.log(MyDate.getCurTime() + "修改文件名成功");
             Log.log(pos + name + " -> " + pos + newName);
         } catch (ClassNotFoundException | NoAccessException | NoUserException | NoFileException | FileExistedException e) {
@@ -288,12 +366,12 @@ public class MainController implements Initializable {
 
     }
 
-    private void reNameFileDirectory(String pos, String name, String newName) throws IOException {
-        try{
-            Client.reNameFileDirectory(pos, name, newName);
+    private void reNameFileDirectory(long id,String pos, String name, String newName) throws IOException {
+        try {
+            Client.reNameFileDirectory(id,pos, name, newName);
             Log.log(MyDate.getCurTime() + "修改文件夹名成功");
             Log.log(pos + name + " -> " + pos + newName);
-        }catch (NoUserException | ClassNotFoundException | NoAccessException | NoFileException | FileExistedException e) {
+        } catch (NoUserException | ClassNotFoundException | NoAccessException | NoFileException | FileExistedException e) {
             Log.log(MyDate.getCurTime() + "修改文件夹名失败");
             Log.log(pos + name + " -> " + pos + name);
         }
@@ -306,9 +384,9 @@ public class MainController implements Initializable {
             String newName = MyDialog.showTextInputDialog("输入新的文件名");
             if (newName == null || newName.equals("")) return;
             if (simpleMyFileProperty.getType().equals("文件夹")) {
-                reNameFileDirectory(currentPath.getValueSafe(), simpleMyFileProperty.getName(), newName);
+                reNameFileDirectory(idStack.peek(),currentPath.getValueSafe(), simpleMyFileProperty.getName(), newName);
             } else {
-                reNameFile(currentPath.getValueSafe(), simpleMyFileProperty.getName(), newName);
+                reNameFile(idStack.peek(),currentPath.getValueSafe(), simpleMyFileProperty.getName(), newName);
             }
             flush();
         } catch (IOException | ClassNotFoundException e) {
@@ -316,9 +394,9 @@ public class MainController implements Initializable {
         }
     }
 
-    private boolean deleteFile(String pos, String name){
+    private boolean deleteFile(long id,String pos, String name) {
         try {
-            Client.deleteFile(pos, name);
+            Client.deleteFile(id,pos, name);
             return true;
         } catch (ClassNotFoundException | NoUserException | NoAccessException | NoFileException | IOException e) {
             e.printStackTrace();
@@ -326,9 +404,9 @@ public class MainController implements Initializable {
         }
     }
 
-    private boolean deleteFileDirectory(String pos, String name) throws IOException {
+    private boolean deleteFileDirectory(long id,String pos, String name) throws IOException {
         try {
-            Client.deleteFileDirectory(pos, name);
+            Client.deleteFileDirectory(id,pos, name);
             return true;
         } catch (ClassNotFoundException | NoUserException | NoAccessException | NoFileException e) {
             e.printStackTrace();
@@ -342,9 +420,9 @@ public class MainController implements Initializable {
                 boolean flag = false;
 
                 if (simpleMyFileProperty.getType().equals("文件夹"))
-                    flag = deleteFileDirectory(currentPath.getValueSafe(), simpleMyFileProperty.getName());
+                    flag = deleteFileDirectory(idStack.peek(),currentPath.getValueSafe(), simpleMyFileProperty.getName());
                 else
-                    flag =deleteFile(currentPath.getValueSafe(), simpleMyFileProperty.getName());
+                    flag = deleteFile(idStack.peek(),currentPath.getValueSafe(), simpleMyFileProperty.getName());
                 flush();
                 //if (flag) {
                 Log.log("删除" + currentPath.getValueSafe() + simpleMyFileProperty.getName() + (flag ? "成功" : "失败"));
@@ -360,7 +438,12 @@ public class MainController implements Initializable {
     }
 
     public void backForward(ActionEvent actionEvent) throws IOException, ClassNotFoundException {
+        if(idStack.size() == 1) {
+            flush();
+            return;
+        }
         currentPath.setValue(MyFile.backFroward(currentPath.getValueSafe()));
+        idStack.pop();
         flush();
     }
 
@@ -392,8 +475,8 @@ public class MainController implements Initializable {
         String text = MyDialog.showTextInputDialog("输入文件夹名称");
         boolean flag = false;
         try {
-           Client.createFileDirectory(currentPath.getValueSafe(), text);
-           flag = true;
+            Client.createFileDirectory(idStack.peek(),currentPath.getValueSafe(), text);
+            flag = true;
         } catch (NoUserException | NoAccessException | NoFileException | FileExistedException e) {
             e.printStackTrace();
         }
@@ -428,5 +511,97 @@ public class MainController implements Initializable {
             return;
         uploadFileDirectory(file);
         flush();
+    }
+
+    public void getSharedList(ActionEvent actionEvent) throws RemoteException {
+        if(simpleMyFileProperty == null) return;
+        ArrayList<String> options = new ArrayList<>();
+        options.add("只读永久链接");
+        options.add("可读可写永久链接");
+        options.add("临时可读链接");
+        options.add("临时可读可写链接");
+        String result = MyDialog.showChioceDialog(options, "选择需要的链接类型", "选择需要的链接类型", "选择需要的链接类型");
+        if (result == null) return;
+        else {
+            String cmd = "";
+            if (result.equals(options.get(0))) {
+                cmd = Client.getReadOnlyURL(simpleMyFileProperty.getId(),currentPath.getValueSafe());
+            } else if (result.equals(options.get(1))) {
+                cmd = Client.getReadAndWriteURL(simpleMyFileProperty.getId(),currentPath.getValueSafe());
+            } else if (result.equals(options.get(2))) {
+                cmd = Client.getTempReadOnlyURL(simpleMyFileProperty.getId(),currentPath.getValueSafe());
+            } else if (result.equals(options.get(3))) {
+                cmd = Client.getTempReadAndWriteURL(simpleMyFileProperty.getId(),currentPath.getValueSafe());
+            }
+            System.out.println(cmd);
+        }
+    }
+
+    public void shareJump(ActionEvent actionEvent) throws IOException, ClassNotFoundException {
+        //shareListChooser.
+        shareIdStack.clear();;
+        curShareURL = shareListChooser.getValue();
+        shareIdStack.push(Long.parseLong(curShareURL.split(":")[1]));
+        shareFlush();
+    }
+
+    public void shareAdd(ActionEvent actionEvent) {
+        String list = MyDialog.showTextInputDialog("输入共享链接");
+        if(list != null){
+            shareListChooser.getItems().add(list);
+        }
+    }
+
+    public void shareBack(ActionEvent actionEvent) throws IOException, ClassNotFoundException {
+        if(shareIdStack.size()==1)return;
+        shareIdStack.pop();
+        shareFlush();
+    }
+
+    public void shareDownload(ActionEvent actionEvent) {
+
+    }
+
+    public void shareRename(ActionEvent actionEvent) throws IOException, ClassNotFoundException {
+
+    }
+
+    public void shareRemove(ActionEvent actionEvent) throws IOException, ClassNotFoundException {
+        if(shareMyFileProperty == null)return;
+        try {
+            if (MyDialog.showCheckAlert("是否确定删除")) {
+                boolean flag = false;
+
+                if (shareMyFileProperty.getType().equals("文件夹"))
+                    flag = deleteFileDirectory(shareIdStack.peek(),curShareURL, shareMyFileProperty.getName());
+                else
+                    flag = deleteFile(shareIdStack.peek(),curShareURL, shareMyFileProperty.getName());
+                //flush();
+                shareFlush();
+                //if (flag) {
+                Log.log("删除" + curShareURL + shareMyFileProperty.getName() + (flag ? "成功" : "失败"));
+                //}
+            }
+        } catch (IOException | ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    public void shareBind(ActionEvent actionEvent) {
+
+    }
+
+    public void shareNewFileDirectory(ActionEvent actionEvent) throws IOException, ClassNotFoundException {
+        String text = MyDialog.showTextInputDialog("输入文件夹名称");
+        boolean flag = false;
+        try {
+            Client.createFileDirectory(shareIdStack.peek(),curShareURL, text);
+            flag = true;
+        } catch (NoUserException | NoAccessException | NoFileException | FileExistedException e) {
+            e.printStackTrace();
+        }
+        Log.log("创建" + currentPath.getValueSafe() + "/" + text + (flag ? "成功" : "失败"));
+        shareFlush();
     }
 }

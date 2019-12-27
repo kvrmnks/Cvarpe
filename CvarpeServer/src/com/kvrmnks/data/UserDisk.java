@@ -14,7 +14,6 @@ public class UserDisk {
     private UserDisk() {
     }
 
-
     public static UserDisk getUserDiskByName(String name) throws NoUserException, NoFileException, IOException, ClassNotFoundException {
         UserDisk ret = new UserDisk();
         long id = DataBase.getRoot(name);
@@ -52,6 +51,7 @@ public class UserDisk {
         }
     }
 
+
     public MyFile createFileDirectory(String pos, String name) throws NoFileException, FileExistedException {
         tmpFile = root;
         StringTokenizer st = new StringTokenizer(pos, "/");
@@ -68,12 +68,70 @@ public class UserDisk {
         }
     }
 
+    public MyFile createFileDirectory(long id,String name) throws NoFileException, FileExistedException { ;
+        MyFile myFile = root.getById(id);
+        if(myFile == null)
+            throw new NoFileException();
+        tmpFile = myFile;
+        if (!tmpFile.sonDirectory.containsKey(name)) {
+            MyFile mf = new MyFile();
+            mf.setName(name);
+            mf.setType(MyFile.TYPEFILEDERECTORY);
+            tmpFile.sonDirectory.put(name, mf);
+            return tmpFile;
+        } else {
+            throw new FileExistedException();
+        }
+    }
+
+    public MyFile createFile(String pos, String name) throws NoFileException, FileExistedException {
+        tmpFile = root;
+        StringTokenizer st = new StringTokenizer(pos, "/");
+        String str = st.nextToken();
+        create(pos.replaceFirst(str, ""), name);
+        if (!tmpFile.sonFile.containsKey(name)) {
+            MyFile mf = new MyFile();
+            mf.setName(name);
+            mf.setType(MyFile.TYPEFILE);
+            tmpFile.sonFile.put(name, mf);
+            return tmpFile;
+        } else {
+            throw new FileExistedException();
+        }
+    }
+
+    public MyFile createFile(long id,String name) throws NoFileException, FileExistedException {
+        tmpFile = root.getById(id);
+        if(tmpFile == null)
+            throw new NoFileException();
+        if (!tmpFile.sonFile.containsKey(name)) {
+            MyFile mf = new MyFile();
+            mf.setName(name);
+            mf.setType(MyFile.TYPEFILE);
+            tmpFile.sonFile.put(name, mf);
+            return tmpFile;
+        } else {
+            throw new FileExistedException();
+        }
+    }
 
     public MyFile deleteFile(String pos, String name) throws NoFileException {
         tmpFile = root;
         StringTokenizer st = new StringTokenizer(pos, "/");
         String str = st.nextToken();
         create(pos.replaceFirst("/" + str, ""), name);
+        if (tmpFile.sonFile.containsKey(name)) {
+            MyFile file = tmpFile.sonFile.get(name);
+            tmpFile.sonFile.remove(name);
+            return file;
+        } else {
+            throw new NoFileException();
+        }
+    }
+
+    public MyFile deleteFile(long id,String name) throws NoFileException {
+        tmpFile = root.getById(id);
+        if(tmpFile == null) throw  new NoFileException();
         if (tmpFile.sonFile.containsKey(name)) {
             MyFile file = tmpFile.sonFile.get(name);
             tmpFile.sonFile.remove(name);
@@ -97,12 +155,38 @@ public class UserDisk {
         }
     }
 
+    public MyFile deleteFileDirectory(long id,String name) throws NoFileException {
+        tmpFile = root.getById(id);
+        if(tmpFile == null) throw new NoFileException();
+        if (tmpFile.sonDirectory.containsKey(name)) {
+            MyFile file = tmpFile.sonDirectory.get(name);
+            tmpFile.sonDirectory.remove(name);
+            return file;
+        } else {
+            throw new NoFileException();
+        }
+    }
+
     public MyFile renameFile(String pos, String name, String newName) throws NoFileException, FileExistedException {
         tmpFile = root;
         StringTokenizer st = new StringTokenizer(pos, "/");
         String str = st.nextToken();
         create(pos.replaceFirst(str, ""), name);
         if (tmpFile.sonFile.containsKey(name) && !tmpFile.sonFile.containsKey(newName)) {
+            tmpFile.sonFile.put(newName, tmpFile.sonFile.get(name));
+            tmpFile.sonFile.remove(name);
+            return tmpFile;
+        } else if (!tmpFile.sonFile.containsKey(name)) {
+            throw new NoFileException();
+        } else {
+            throw new FileExistedException();
+        }
+    }
+
+    public MyFile renameFile(long id,String name,String newName) throws NoFileException, FileExistedException {
+        tmpFile = root.getById(id);
+        if (tmpFile.sonFile.containsKey(name) && !tmpFile.sonFile.containsKey(newName)) {
+           // tmpFile.sonFile.get(name).setName(newName);
             tmpFile.sonFile.put(newName, tmpFile.sonFile.get(name));
             tmpFile.sonFile.remove(name);
             return tmpFile;
@@ -129,17 +213,14 @@ public class UserDisk {
         }
     }
 
-    public MyFile createFile(String pos, String name) throws NoFileException, FileExistedException {
-        tmpFile = root;
-        StringTokenizer st = new StringTokenizer(pos, "/");
-        String str = st.nextToken();
-        create(pos.replaceFirst(str, ""), name);
-        if (!tmpFile.sonFile.containsKey(name)) {
-            MyFile mf = new MyFile();
-            mf.setName(name);
-            mf.setType(MyFile.TYPEFILE);
-            tmpFile.sonFile.put(name, mf);
+    public MyFile renameFileDirectory(long id,String name,String newName) throws NoFileException, FileExistedException {
+        tmpFile = root.getById(id);
+        if (tmpFile.sonDirectory.containsKey(name) && !tmpFile.sonDirectory.containsKey(newName)) {
+            tmpFile.sonDirectory.put(newName, tmpFile.sonDirectory.get(name));
+            tmpFile.sonDirectory.remove(name);
             return tmpFile;
+        } else if (!tmpFile.sonDirectory.containsKey(name)) {
+            throw new NoFileException();
         } else {
             throw new FileExistedException();
         }
@@ -150,6 +231,15 @@ public class UserDisk {
         StringTokenizer st = new StringTokenizer(pos, "/");
         String str = st.nextToken();
         create(pos.replaceFirst(str, ""), name);
+        if (tmpFile.sonFile.containsKey(name)) {
+            return tmpFile.sonFile.get(name).getId();
+        } else {
+            throw new NoFileException();
+        }
+    }
+
+    public long getFileId(long id,String name) throws NoFileException {
+        tmpFile = root.getById(id);
         if (tmpFile.sonFile.containsKey(name)) {
             return tmpFile.sonFile.get(name).getId();
         } else {
@@ -169,13 +259,25 @@ public class UserDisk {
         }
     }
 
+    public long getFileDirectoryId(long id,String name) throws NoFileException {
+        tmpFile = root.getById(id);
+        if (tmpFile.sonDirectory.containsKey(name)) {
+            return tmpFile.sonDirectory.get(name).getId();
+        } else {
+            throw new NoFileException();
+        }
+    }
+
     public MyFile getStructure(String pos) throws NoFileException {
         tmpFile = root;
         StringTokenizer st = new StringTokenizer(pos, "/");
         String str = st.nextToken(), name = "";
-        // System.out.println(pos.replaceFirst(str, ""));
         create(pos.replaceFirst(str, ""), name);
         MyFile mf = tmpFile;
         return mf;
+    }
+
+    public MyFile getStructure(long id) throws NoFileException {
+        return root.getById(id);
     }
 }

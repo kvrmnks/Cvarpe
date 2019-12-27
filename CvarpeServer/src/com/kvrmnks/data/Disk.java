@@ -89,6 +89,19 @@ public class Disk {
         pos = getRealPos(pos);
         MyFile mf = userDisk.createFileDirectory(pos, name);
         mf = mf.sonDirectory.get(name);
+        mf.setModifyTime(MyDate.getCurTime());
+        DataBase.addFile(mf);
+        mainTain();
+    }
+
+    synchronized public void createFileDirectory(long id, String pos, String name) throws NoAccessException, FileExistedException, NoFileException, IOException {
+        if (!canWrite(pos))
+            throw new NoAccessException();
+        //pos = getRealPos(pos);
+        MyFile mf = userDisk.createFileDirectory(id, name);
+        //mf = mf.sonDirectory.get(name);
+        mf = mf.sonDirectory.get(name);
+        mf.setModifyTime(MyDate.getCurTime());
         DataBase.addFile(mf);
         mainTain();
     }
@@ -105,11 +118,33 @@ public class Disk {
         mainTain();
     }
 
+    synchronized public void deleteFileDirectory(long id, String pos, String name) throws NoFileException, NoAccessException, IOException {
+        if (!canWrite(pos))
+            throw new NoAccessException();
+        pos = getRealPos(pos);
+        MyFile file = userDisk.deleteFileDirectory(id, name);
+        MyFile[] myFiles = file.toArray();
+        for (MyFile myFile : myFiles) {
+            DataBase.deleteFile(myFile.getId());
+        }
+        mainTain();
+    }
+
     synchronized public void deleteFile(String pos, String name) throws NoFileException, IOException, NoAccessException {
         if (!canWrite(pos))
             throw new NoAccessException();
         pos = getRealPos(pos);
         MyFile mf = userDisk.deleteFile(pos, name);
+        DataBase.deleteFile(mf.getId());
+        RealDisk.deleteFile(mf);
+        mainTain();
+    }
+
+    synchronized public void deleteFile(long id, String pos, String name) throws NoFileException, NoAccessException, IOException {
+        if (!canWrite(pos))
+            throw new NoAccessException();
+        pos = getRealPos(pos);
+        MyFile mf = userDisk.deleteFile(id, name);
         DataBase.deleteFile(mf.getId());
         RealDisk.deleteFile(mf);
         mainTain();
@@ -133,6 +168,17 @@ public class Disk {
         }
     }
 
+    synchronized public void renameFile(long id, String pos, String name, String newName) throws FileExistedException, NoFileException, NoAccessException, IOException {
+        if (!canWrite(pos))
+            throw new NoAccessException();
+        MyFile file = userDisk.renameFile(id, name, newName);
+        file.sonFile.get(newName).setName(newName);
+        RealDisk.renameFile(id, file.sonFile.get(newName));
+        DataBase.deleteFile(file.sonFile.get(newName).getId());
+        DataBase.addFile(file.sonFile.get(newName));
+        mainTain();
+    }
+
     synchronized public void renameFileDirectory(String pos, String name, String newName) throws NoFileException, FileExistedException, IOException, NoAccessException {
         if (!canWrite(pos))
             throw new NoAccessException();
@@ -151,6 +197,17 @@ public class Disk {
         }
     }
 
+    synchronized public void renameFileDirectory(long id, String pos, String name, String newName) throws NoFileException, FileExistedException, IOException, NoAccessException {
+        if (!canWrite(pos))
+            throw new NoAccessException();
+        MyFile file = userDisk.renameFileDirectory(id, name, newName);
+        DataBase.deleteFile(file.sonDirectory.get(newName).getId());
+        file.sonDirectory.get(newName).setName(newName);
+        file.sonDirectory.get(newName).setModifyTime(MyDate.getCurTime());
+        DataBase.addFile(file.sonDirectory.get(newName));
+        mainTain();
+    }
+
     synchronized public void createFile(String pos, String name) throws FileExistedException, NoFileException, IOException, NoAccessException {
         if (!canWrite(pos))
             throw new NoAccessException();
@@ -158,7 +215,19 @@ public class Disk {
         MyFile my = userDisk.createFile(pos, name);
         my.sonFile.get(name).setModifyTime(MyDate.getCurTime());
         DataBase.addFile(my.sonFile.get(name));
-        File file = new File(RealDisk.LOCATION+"_"+my.getId()+"_"+my.getName());
+        File file = new File(RealDisk.LOCATION + "_" + my.getId() + "_" + my.getName());
+        file.createNewFile();
+        mainTain();
+    }
+
+    synchronized public void createFile(long id, String pos, String name) throws FileExistedException, NoFileException, NoAccessException, IOException {
+        if (!canWrite(pos))
+            throw new NoAccessException();
+        // pos = getRealPos(pos);
+        MyFile my = userDisk.createFile(id, name);
+        my.sonFile.get(name).setModifyTime(MyDate.getCurTime());
+        DataBase.addFile(my.sonFile.get(name));
+        File file = new File(RealDisk.LOCATION + "_" + my.getId() + "_" + my.getName());
         file.createNewFile();
         mainTain();
     }
@@ -168,6 +237,13 @@ public class Disk {
             throw new NoAccessException();
         pos = getRealPos(pos);
         return userDisk.getStructure(pos);
+    }
+
+    synchronized public MyFile getStructure(long id, String pos) throws NoAccessException, NoFileException {
+        if (!canRead(pos))
+            throw new NoAccessException();
+        // pos = getRealPos(pos);
+        return userDisk.getStructure(id);
     }
 
     synchronized public String getUserName() {
@@ -191,13 +267,13 @@ public class Disk {
         if (file.sonFile.containsKey(name)) {
             if (file.sonFile.containsKey(name + ".info")) {
 
-                long infoId = file.sonFile.get(name+".info").getId();
-                Scanner scan = new Scanner(new File(RealDisk.LOCATION+"_"+infoId+"_"+file.sonFile.get(name+".info").getName()));
+                long infoId = file.sonFile.get(name + ".info").getId();
+                Scanner scan = new Scanner(new File(RealDisk.LOCATION + "_" + infoId + "_" + file.sonFile.get(name + ".info").getName()));
                 long curSize = scan.nextLong();
-                if(size != curSize)
+                if (size != curSize)
                     throw new FileExistedException();
                 String Q = scan.next();
-                if(!Q.equals(Md5))
+                if (!Q.equals(Md5))
                     throw new FileExistedException();
             } else {
                 throw new FileExistedException();
@@ -205,15 +281,26 @@ public class Disk {
         } else {
             createFile(pos, name);
             createFile(pos, name + ".info");
-            long infoId = file.sonFile.get(name+".info").getId();
-            PrintWriter pw = new PrintWriter(new BufferedOutputStream(new FileOutputStream(new File(RealDisk.LOCATION+"_"+infoId+"_"+file.sonFile.get(name+".info").getName()))));
+            long infoId = file.sonFile.get(name + ".info").getId();
+            PrintWriter pw = new PrintWriter(new BufferedOutputStream(new FileOutputStream(new File(RealDisk.LOCATION + "_" + infoId + "_" + file.sonFile.get(name + ".info").getName()))));
             pw.println(size);
             pw.println(Md5);
         }
         long realId = file.sonFile.get(name).getId();
-        BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(new FileOutputStream(new File(RealDisk.LOCATION+"_"+realId+"_"+file.sonFile.get(name).getName())));
-        bufferedOutputStream.write(buffer,begin,length);
+        BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(new FileOutputStream(new File(RealDisk.LOCATION + "_" + realId + "_" + file.sonFile.get(name).getName())));
+        bufferedOutputStream.write(buffer, begin, length);
         bufferedOutputStream.close();
     }
 
+    synchronized public MyFile getFileById(String pos, long id) throws NoAccessException, NoFileException {
+        if (!canRead(pos))
+            throw new NoAccessException();
+        MyFile myFile = userDisk.getRoot();
+        MyFile[] myFiles = myFile.toArray();
+        for (MyFile mf : myFiles) {
+            if (mf.getId() == id)
+                return mf;
+        }
+        throw new NoFileException();
+    }
 }

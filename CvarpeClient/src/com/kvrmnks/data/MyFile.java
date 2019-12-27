@@ -1,14 +1,11 @@
 package com.kvrmnks.data;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
+import com.kvrmnks.exception.NoFileException;
+
 import java.io.Serializable;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Set;
 
 public class MyFile implements Serializable {
 
@@ -125,6 +122,7 @@ public class MyFile implements Serializable {
 
     public MyFile[] getCurrentFileList() {
         ArrayList<MyFile> list = new ArrayList<>();
+        list.add(this);
         for (MyFile x : sonFile.values())
             list.add(x);
         for (MyFile x : sonDirectory.values())
@@ -165,6 +163,30 @@ public class MyFile implements Serializable {
         return ret;
     }
 
+    public void mainTain(){
+        for (MyFile mf:this.sonFile.values())
+            this.size+=mf.getSize();
+        for (MyFile mf:this.sonDirectory.values()){
+            mf.mainTain();
+            this.size+=mf.getSize();
+        }
+    }
+
+    private void buildPath(MyFile myFile){
+        for(MyFile x : myFile.sonDirectory.values()){
+            x.setPath(myFile.getPath()+x.getName()+"/");
+            x.buildPath(this);
+        }
+        for(MyFile x : myFile.sonFile.values()){
+            x.setPath(myFile.getPath()+x.getName()+"/");
+        }
+    }
+
+    public void buildPath(){
+        this.setPath("/"+this.getName()+"/");
+        this.buildPath(this);
+    }
+
     public static String transferSize(long size) {
         String str;
         double num;
@@ -182,6 +204,15 @@ public class MyFile implements Serializable {
             str = df.format(num) + "GB";
         }
         return str;
+    }
+
+    public MyFile getById(long id) throws NoFileException {
+        MyFile[] myFiles = toArray();
+        for (MyFile x : myFiles)
+            if (x.getId() == id)
+                return x;
+        throw new NoFileException();
+
     }
 
     @Override

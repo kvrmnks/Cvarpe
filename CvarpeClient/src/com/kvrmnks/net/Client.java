@@ -6,24 +6,25 @@ import sun.net.www.protocol.file.FileURLConnection;
 
 import java.io.*;
 import java.net.Socket;
+import java.rmi.RemoteException;
 
 public class Client {
-  //  private static ObjectInputStream socketIn;
+    //  private static ObjectInputStream socketIn;
     //private static ObjectOutputStream socketOut;
- //   private static Socket socket;
+    //   private static Socket socket;
     private static String serverIp;
     private static int port;
     public static Net server;
 
-    public static void setPort(int port){
+    public static void setPort(int port) {
         Client.port = port;
     }
 
-    public static void setIp(String ip){
+    public static void setIp(String ip) {
         serverIp = ip;
     }
 
-    public static void setNet(Net net){
+    public static void setNet(Net net) {
         server = net;
     }
 
@@ -36,10 +37,20 @@ public class Client {
     }
 
     public static MyFile getStructure(String location) throws ClassNotFoundException, NoUserException, NoAccessException, NoFileException, IOException {
-        return server.getStructure(location);
+        MyFile myFile = server.getStructure(location);
+        myFile.mainTain();
+        myFile.buildPath();
+        return myFile;
     }
 
-    public static void downLoad(String userName,String pos, String name, File location, String ip, SimpleLogListProperty simpleLogListProperty) throws IOException {
+    public static MyFile getStructure(long id, String pos) throws ClassNotFoundException, NoUserException, NoAccessException, NoFileException, IOException {
+        MyFile myFile = server.getStructure(id,pos);
+        myFile.mainTain();
+        myFile.buildPath();
+        return myFile;
+    }
+
+    public static void downLoad(String userName, String pos, String name, File location, String ip, SimpleLogListProperty simpleLogListProperty) throws IOException {
         /*TransData transData = new TransData(userName, pos, name, location.getAbsolutePath(), TransData.TYPE_DOWNLOAD);
 
         TransDataList tmp = new TransDataList(userName);
@@ -97,7 +108,7 @@ public class Client {
      * 不可以指定上传到服务器的文件名的上传
      * */
     public static void upload(String userName, String fileDirectory, File localFile, String ip, SimpleLogListProperty loglist) throws IOException {
-      //  upload(userName, fileDirectory, localFile.getName(), localFile, ip, loglist);
+        //  upload(userName, fileDirectory, localFile.getName(), localFile, ip, loglist);
     }
 
     /*
@@ -107,22 +118,28 @@ public class Client {
         }
     */
     public static void deleteFile(String pos, String name) throws ClassNotFoundException, NoUserException, NoAccessException, NoFileException, IOException {
-        server.deleteFile(pos,name);
-
+        server.deleteFile(pos, name);
     }
 
+    public static void deleteFile(long id,String pos, String name) throws ClassNotFoundException, NoUserException, NoAccessException, NoFileException, IOException {
+        server.deleteFile(id,pos, name);
+    }
     public static void deleteFileDirectory(String pos, String name) throws ClassNotFoundException, NoUserException, NoAccessException, NoFileException, IOException {
-        server.deleteFileDirectory(pos,name);
+        server.deleteFileDirectory(pos, name);
     }
-
+    public static void deleteFileDirectory(long id,String pos, String name) throws ClassNotFoundException, NoUserException, NoAccessException, NoFileException, IOException {
+        server.deleteFileDirectory(id,pos, name);
+    }
     /*
      * fileDirectory 要创建文件夹的目录
      * fileName 要创建的文件夹的名称
      * */
     public static void createFileDirectory(String fileDirectory, String fileName) throws IOException, ClassNotFoundException, NoUserException, NoAccessException, NoFileException, FileExistedException {
-        server.createDirectory(fileDirectory,fileName);
+        server.createDirectory(fileDirectory, fileName);
     }
-
+    public static void createFileDirectory(long id,String fileDirectory, String fileName) throws IOException, ClassNotFoundException, NoUserException, NoAccessException, NoFileException, FileExistedException {
+        server.createDirectory(id,fileDirectory, fileName);
+    }
 
     /*
      * searchFile 搜索文件
@@ -140,12 +157,13 @@ public class Client {
      * 会自动把输入的密码经过MD5加密之后发送
      * */
     public static boolean logUp(String name, String password) throws IOException, UserExistedException {
-        return server.logUp(name,MD5.getMD5(password));
+        return server.logUp(name, MD5.getMD5(password));
     }
 
-    public static boolean logIn(String name,String password) throws IOException {
-        return server.logIn(name,MD5.getMD5(password));
+    public static boolean logIn(String name, String password) throws IOException {
+        return server.logIn(name, MD5.getMD5(password));
     }
+
     /*
      * 下载文件夹
      * fileLocation 代表文件夹本地地址
@@ -196,8 +214,31 @@ public class Client {
         server.renameFileDirectory(pos, name, newName);
     }
 
+    public static void reNameFileDirectory(long id, String pos, String name, String newName) throws IOException, ClassNotFoundException, NoUserException, NoAccessException, NoFileException, FileExistedException {
+        server.renameFileDirectory(id, pos, name, newName);
+    }
+
     public static void reNameFile(String pos, String name, String newName) throws IOException, ClassNotFoundException, NoUserException, NoAccessException, NoFileException, FileExistedException {
         server.renameFile(pos, name, newName);
     }
 
+    public static void reNameFile(long id, String pos, String name, String newName) throws IOException, ClassNotFoundException, NoUserException, NoAccessException, NoFileException, FileExistedException {
+        server.renameFile(id, pos, name, newName);
+    }
+
+    public static String getReadAndWriteURL(long id,String pos) throws RemoteException {
+        return server.getReadAndWriteURL(id,pos);
+    }
+
+    public static String getReadOnlyURL(long id,String pos) throws RemoteException {
+        return server.getReadOnlyURL(id,pos);
+    }
+
+    public static String getTempReadAndWriteURL(long id,String pos) throws RemoteException {
+        return server.getTempReadAndWriteURL(id,pos);
+    }
+
+    public static String getTempReadOnlyURL(long id,String pos) throws RemoteException {
+        return server.getTempReadOnlyURL(id,pos);
+    }
 }

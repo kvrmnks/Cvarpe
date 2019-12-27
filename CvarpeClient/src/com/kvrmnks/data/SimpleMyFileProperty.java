@@ -11,6 +11,7 @@ public class SimpleMyFileProperty {
     private final SimpleStringProperty path;
     private final SimpleStringProperty location = new SimpleStringProperty("");
     private long Rsize;
+    private long id;
 
     public String getLocation() {
         return location.get();
@@ -36,6 +37,7 @@ public class SimpleMyFileProperty {
         this.modifyTime = new SimpleStringProperty(modifyTime);
         this.path = new SimpleStringProperty(my.getPath());
         Rsize = my.getSize();
+        id = my.getId();
     }
 
     public SimpleMyFileProperty(String name, long size, int type, String modifyTime) {
@@ -113,5 +115,9 @@ public class SimpleMyFileProperty {
 
     public void setModifyTime(String modifyTime) {
         this.modifyTime.set(modifyTime);
+    }
+
+    public Long getId() {
+        return id;
     }
 }
