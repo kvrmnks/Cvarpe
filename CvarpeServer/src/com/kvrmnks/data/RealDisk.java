@@ -42,7 +42,9 @@ public class RealDisk {
         File file = new File(Disk.LOCATION + "_" + myFile.getId() + "_" + myFile.getName());
         RandomAccessFile randomAccessFile = new RandomAccessFile(file.getAbsoluteFile(),"r");
         randomAccessFile.seek(begin);
-        return randomAccessFile.read(buffer,0,length);
+        int tmp = randomAccessFile.read(buffer,0,length);
+        randomAccessFile.close();
+        return tmp;
     }
 
     synchronized public static void deleteFile(long id) throws IOException, NoFileException, ClassNotFoundException {

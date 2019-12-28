@@ -10,6 +10,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.text.DecimalFormat;
 
+@Deprecated
 public class Downloader implements Runnable {
     private final static int PACKAGE_SIZE = 1024;
     private ObjectOutputStream out;

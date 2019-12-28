@@ -224,6 +224,7 @@ public class Disk {
         MyFile my = userDisk.createFile(id, name);
         my.sonFile.get(name).setModifyTime(MyDate.getCurTime());
         DataBase.addFile(my.sonFile.get(name));
+        my = my.sonFile.get(name);
         File file = new File(RealDisk.LOCATION + "_" + my.getId() + "_" + my.getName());
         file.createNewFile();
         mainTain();
@@ -247,12 +248,28 @@ public class Disk {
         return userName;
     }
 
-    synchronized public int readByteOfFile(long id,String pos, String name, byte[] buffer, int begin, int length) throws NoAccessException, NoFileException, IOException {
+    synchronized public int readByteOfFile(long id, String pos, String name, byte[] buffer, int begin, int length) throws NoAccessException, NoFileException, IOException {
         if (!canRead(pos))
             throw new NoAccessException();
-        MyFile myFile = getStructure(id,pos);
+        MyFile myFile = getStructure(id, pos);
         myFile = myFile.sonFile.get(name);
-        return RealDisk.readByteOfFile(myFile, buffer, begin, length);
+        return RealDisk.readByteOfFile(myFile, buffer, begin, begin + length);
+    }
+
+    synchronized public void writeByteOfFile(long id, String pos, String name, byte[] buffer, int begin, int length) throws NoAccessException, NoFileException, IOException {
+        if (!canWrite(pos))
+            throw new NoAccessException();
+        MyFile myFile = getStructure(id, pos);
+        if (!myFile.sonFile.containsKey(name))
+            throw new NoFileException();
+        myFile = myFile.sonFile.get(name);
+        File file = new File(RealDisk.LOCATION + "_" + myFile.getId() + "_" + myFile.getName());
+        BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(new FileOutputStream(file,true));
+        bufferedOutputStream.write(buffer, begin, begin + length);
+        bufferedOutputStream.flush();
+        bufferedOutputStream.close();
+        myFile.setSize(myFile.getSize() + length);
+        mainTain();
     }
 
     @Deprecated
@@ -288,24 +305,24 @@ public class Disk {
         bufferedOutputStream.close();
     }
 
-    synchronized public InfoFile getInfoFile(long id,String pos,String name) throws NoAccessException, NoFileException, IOException, FileStructureException {
+    synchronized public InfoFile getInfoFile(long id, String pos, String name) throws NoAccessException, NoFileException, IOException, FileStructureException {
         if (!canRead(pos))
             throw new NoAccessException();
-        MyFile myFile = getStructure(id,pos);
-        if(!myFile.sonFile.containsKey(name))
+        MyFile myFile = getStructure(id, pos);
+        if (!myFile.sonFile.containsKey(name))
             throw new NoFileException();
         myFile = myFile.sonFile.get(name);
-        File file = new File(RealDisk.LOCATION + "__" + myFile.getId()+"__"+myFile.getName());
+        File file = new File(RealDisk.LOCATION + "_" + myFile.getId() + "_" + myFile.getName());
         Scanner scan = new Scanner(file);
         InfoFile infoFile = new InfoFile();
-        if(scan.hasNext()){
+        if (scan.hasNext()) {
             infoFile.setMd5(scan.next());
-        }else{
+        } else {
             throw new FileStructureException();
         }
-        if(scan.hasNextLong()){
+        if (scan.hasNextLong()) {
             infoFile.setSize(scan.nextLong());
-        }else{
+        } else {
             throw new FileStructureException();
         }
         mainTain();
@@ -313,14 +330,14 @@ public class Disk {
     }
 
     public void writeInfoFile(long id, String pos, String name, InfoFile infoFile) throws NoAccessException, NoFileException, IOException {
-        if(!canWrite(pos))
+        if (!canWrite(pos))
             throw new NoAccessException();
-        MyFile myFile = getStructure(id,pos);
-        if(!myFile.sonFile.containsKey(name))
+        MyFile myFile = getStructure(id, pos);
+        if (!myFile.sonFile.containsKey(name))
             throw new NoFileException();
         myFile = myFile.sonFile.get(name);
-        File file = new File(RealDisk.LOCATION+"__"+myFile.getId()+"__"+myFile.getName());
-        if(file.exists()){
+        File file = new File(RealDisk.LOCATION + "_" + myFile.getId() + "_" + myFile.getName());
+        if (file.exists()) {
             file.delete();
             file.createNewFile();
         }
@@ -333,12 +350,12 @@ public class Disk {
     }
 
     @Deprecated
-    synchronized public void println(long id,String pos,String name,String content) throws NoAccessException, NoFileException, IOException {
-        MyFile myFile = getStructure(id,pos);
-        if(!myFile.sonFile.containsKey(name))
+    synchronized public void println(long id, String pos, String name, String content) throws NoAccessException, NoFileException, IOException {
+        MyFile myFile = getStructure(id, pos);
+        if (!myFile.sonFile.containsKey(name))
             throw new NoFileException();
         myFile = myFile.sonFile.get(name);
-        PrintWriter out = new PrintWriter(new FileOutputStream(new File(RealDisk.LOCATION+"__"+myFile.getId()+"__"+myFile.getName())));
+        PrintWriter out = new PrintWriter(new FileOutputStream(new File(RealDisk.LOCATION + "_" + myFile.getId() + "_" + myFile.getName())));
         out.println(content);
         out.flush();
         out.close();

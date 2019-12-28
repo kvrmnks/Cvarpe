@@ -4,6 +4,8 @@ import com.kvrmnks.UI.BuilderController;
 import com.kvrmnks.UI.MainController;
 import com.kvrmnks.data.DataBase;
 import com.kvrmnks.net.Server;
+import com.kvrmnks.net.ServerReader;
+import com.kvrmnks.net.ServerWriter;
 import com.sun.javafx.sg.prism.NGNode;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
@@ -81,6 +83,8 @@ public class Main extends Application {
             mc.setApp(this);
             LocateRegistry.createRegistry(ss.getLocalPort());
             Naming.rebind("rmi://localhost:"+ss.getLocalPort()+"/Server",new Server(mc));
+            Naming.rebind("rmi://localhost:"+ss.getLocalPort()+"/ServerReader",new ServerReader());
+            Naming.rebind("rmi://localhost:"+ss.getLocalPort()+"/ServerWriter",new ServerWriter());
         } catch (Exception e) {
             e.printStackTrace();
         }

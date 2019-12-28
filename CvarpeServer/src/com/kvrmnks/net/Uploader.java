@@ -12,6 +12,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Scanner;
 
+@Deprecated
 public class Uploader implements Runnable {
     private final static int PACKAGE_SIZE = 1024;
     private Socket socket;

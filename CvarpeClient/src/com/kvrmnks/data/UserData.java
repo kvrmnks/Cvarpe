@@ -3,7 +3,7 @@ package com.kvrmnks.data;
 public class UserData {
     private static String userName;
     private static String userPassword;
-    private static String ip;
+    private static String serverIp,readerIp,writerIp;
 
     public static String getUserName() {
         return userName;
@@ -21,11 +21,27 @@ public class UserData {
         UserData.userPassword = userPassword;
     }
 
-    public static void setIp(String ip){
-        UserData.ip = ip;
+    public static String getServerIp() {
+        return serverIp;
     }
 
-    public static String getIp(){
-        return ip;
+    public static void setServerIp(String serverIp) {
+        UserData.serverIp = serverIp;
+    }
+
+    public static String getReaderIp() {
+        return readerIp;
+    }
+
+    public static void setReaderIp(String readerIp) {
+        UserData.readerIp = readerIp;
+    }
+
+    public static String getWriterIp() {
+        return writerIp;
+    }
+
+    public static void setWriterIp(String writerIp) {
+        UserData.writerIp = writerIp;
     }
 }

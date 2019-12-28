@@ -2,6 +2,7 @@ package com.kvrmnks.net;
 
 import com.kvrmnks.data.*;
 import com.kvrmnks.exception.*;
+
 import java.io.*;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
@@ -31,6 +32,7 @@ public class Client {
         Client.serverIp = serverIp;
     }
 
+    @Deprecated
     public static MyFile getStructure(String location) throws ClassNotFoundException, NoUserException, NoAccessException, NoFileException, IOException {
         MyFile myFile = server.getStructure(location);
         myFile.mainTain();
@@ -39,35 +41,15 @@ public class Client {
     }
 
     public static MyFile getStructure(long id, String pos) throws ClassNotFoundException, NoUserException, NoAccessException, NoFileException, IOException {
-        MyFile myFile = server.getStructure(id,pos);
+        MyFile myFile = server.getStructure(id, pos);
         myFile.mainTain();
         myFile.buildPath();
         return myFile;
     }
 
-    public static void downLoad(long id,String pos,String name,String realPos,SimpleLogListProperty simpleLogListProperty) throws IOException, ClassNotFoundException, NoUserException, NoAccessException, NoFileException, NotBoundException {
+    public static void downLoad(long id, String pos, String name, String realPos, SimpleLogListProperty simpleLogListProperty) throws IOException, ClassNotFoundException, NoUserException, NoAccessException, NoFileException, NotBoundException {
         DownLoader downLoader = new DownLoader(id, pos, name, realPos, simpleLogListProperty);
         new Thread(downLoader).start();
-        /*TransData transData = new TransData(userName, pos, name, location.getAbsolutePath(), TransData.TYPE_DOWNLOAD);
-
-        TransDataList tmp = new TransDataList(userName);
-        try {
-            tmp = DataBase.getTransDataListByName(userName);
-        } catch (NoSuchUserException e) {}
-        tmp.addTranData(transData);
-        DataBase.saveData();
-
-        socketOut.writeUTF("DownloadFile$" + pos + "$" + name);
-        socketOut.flush();
-        if(!socketIn.readBoolean())
-            return;
-        int port = socketIn.readInt();
-        DownLoader downLoader = new DownLoader(transData,ip,port,simpleLogListProperty);
-        simpleLogListProperty.setDownLoader(downLoader);
-        Thread t = new Thread(downLoader);
-        t.start();
-
-         */
     }
 
     /*
@@ -77,33 +59,15 @@ public class Client {
      * localFile 待上传的本地文件
      * ip 服务器的地址
      * */
-    private static void upload(String userName, String pos, String name, File realPos, String ip
-            , SimpleLogListProperty logListProperty) throws IOException {
-       /* TransData transData = new TransData(userName, pos, name, realPos.getAbsolutePath(), TransData.TYPE_UPLOAD);
-
-        TransDataList tmp = new TransDataList(userName);
-        try {
-            tmp = DataBase.getTransDataListByName(userName);
-        } catch (NoSuchUserException e) {}
-        tmp.addTranData(transData);
-        DataBase.saveData();
-
-        socketOut.writeUTF("UploadFile$" + pos + "$" + name);
-        socketOut.flush();
-        if(!socketIn.readBoolean())
-            return;
-        int port = socketIn.readInt();
-        Uploader uploader = new Uploader(transData, ip, port, logListProperty);
-        logListProperty.setUploader(uploader);
-        Thread t = new Thread(uploader);
-        t.start();
-
-        */
+    public static void upload(long id,String pos,String name,String realPos,SimpleLogListProperty simpleLogListProperty) throws IOException, NoUserException, NoAccessException, NoFileException, ClassNotFoundException, FileStructureException, NotBoundException, FileExistedException {
+        Uploader uploader = new Uploader(id,pos,name,realPos,simpleLogListProperty);
+        new Thread(uploader).start();
     }
 
     /*
      * 不可以指定上传到服务器的文件名的上传
      * */
+    @Deprecated
     public static void upload(String userName, String fileDirectory, File localFile, String ip, SimpleLogListProperty loglist) throws IOException {
         //  upload(userName, fileDirectory, localFile.getName(), localFile, ip, loglist);
     }
@@ -114,26 +78,31 @@ public class Client {
             socketOut.flush();
         }
     */
+    @Deprecated
     public static void deleteFile(String pos, String name) throws ClassNotFoundException, NoUserException, NoAccessException, NoFileException, IOException {
         server.deleteFile(pos, name);
     }
 
-    public static void deleteFile(long id,String pos, String name) throws ClassNotFoundException, NoUserException, NoAccessException, NoFileException, IOException {
-        server.deleteFile(id,pos, name);
+    public static void deleteFile(long id, String pos, String name) throws ClassNotFoundException, NoUserException, NoAccessException, NoFileException, IOException {
+        server.deleteFile(id, pos, name);
     }
+
+    @Deprecated
     public static void deleteFileDirectory(String pos, String name) throws ClassNotFoundException, NoUserException, NoAccessException, NoFileException, IOException {
         server.deleteFileDirectory(pos, name);
     }
-    public static void deleteFileDirectory(long id,String pos, String name) throws ClassNotFoundException, NoUserException, NoAccessException, NoFileException, IOException {
-        server.deleteFileDirectory(id,pos, name);
+
+    public static void deleteFileDirectory(long id, String pos, String name) throws ClassNotFoundException, NoUserException, NoAccessException, NoFileException, IOException {
+        server.deleteFileDirectory(id, pos, name);
     }
 
+    @Deprecated
     public static void createFileDirectory(String fileDirectory, String fileName) throws IOException, ClassNotFoundException, NoUserException, NoAccessException, NoFileException, FileExistedException {
         server.createDirectory(fileDirectory, fileName);
     }
 
-    public static void createFileDirectory(long id,String fileDirectory, String fileName) throws IOException, ClassNotFoundException, NoUserException, NoAccessException, NoFileException, FileExistedException {
-        server.createDirectory(id,fileDirectory, fileName);
+    public static void createFileDirectory(long id, String fileDirectory, String fileName) throws IOException, ClassNotFoundException, NoUserException, NoAccessException, NoFileException, FileExistedException {
+        server.createDirectory(id, fileDirectory, fileName);
     }
 
     public static MyFile[] searchFile(String fileName) throws IOException, ClassNotFoundException, NoFileException, NoAccessException, NoUserException {
@@ -155,19 +124,6 @@ public class Client {
             , String panFileDirectoryName
     ) throws IOException, ClassNotFoundException {
         return null;
-        /*
-        FileDirectoryDownLoader fileDirectoryDownLoader = new FileDirectoryDownLoader(
-                fileLocation
-                , panLocation
-                , panFileDirectoryName
-                , socketIn
-                , socketOut
-                , serverIp);
-        fileDirectoryDownLoader.init();
-        fileDirectoryDownLoader.download();
-        return fileDirectoryDownLoader.getProperty();
-
-         */
     }
 
     public static SimpleLogListProperty[] uploadFileDirectory(
@@ -175,21 +131,10 @@ public class Client {
             , String panLocation
     ) throws IOException {
         return null;
-        /*
-        FileDirectoryUploader fileDirectoryUploader = new FileDirectoryUploader(
-                fileLocation
-                , panLocation
-                , serverIp
-                , socketIn
-                , socketOut
-        );
-        fileDirectoryUploader.init();
-        fileDirectoryUploader.upload();
-        return fileDirectoryUploader.getProperties();
 
-         */
     }
 
+    @Deprecated
     public static void reNameFileDirectory(String pos, String name, String newName) throws IOException, ClassNotFoundException, NoUserException, NoAccessException, NoFileException, FileExistedException {
         server.renameFileDirectory(pos, name, newName);
     }
@@ -198,6 +143,7 @@ public class Client {
         server.renameFileDirectory(id, pos, name, newName);
     }
 
+    @Deprecated
     public static void reNameFile(String pos, String name, String newName) throws IOException, ClassNotFoundException, NoUserException, NoAccessException, NoFileException, FileExistedException {
         server.renameFile(pos, name, newName);
     }
@@ -206,19 +152,19 @@ public class Client {
         server.renameFile(id, pos, name, newName);
     }
 
-    public static String getReadAndWriteURL(long id,String pos) throws RemoteException {
-        return server.getReadAndWriteURL(id,pos);
+    public static String getReadAndWriteURL(long id, long fatherId,String pos) throws RemoteException {
+        return server.getReadAndWriteURL(id,fatherId, pos);
     }
 
-    public static String getReadOnlyURL(long id,String pos) throws RemoteException {
-        return server.getReadOnlyURL(id,pos);
+    public static String getReadOnlyURL(long id, long fatherId,String pos) throws RemoteException {
+        return server.getReadOnlyURL(id,fatherId, pos);
     }
 
-    public static String getTempReadAndWriteURL(long id,String pos) throws RemoteException {
-        return server.getTempReadAndWriteURL(id,pos);
+    public static String getTempReadAndWriteURL(long id, long fatherId,String pos) throws RemoteException {
+        return server.getTempReadAndWriteURL(id, fatherId,pos);
     }
 
-    public static String getTempReadOnlyURL(long id,String pos) throws RemoteException {
-        return server.getTempReadOnlyURL(id,pos);
+    public static String getTempReadOnlyURL(long id, long fatherId,String pos) throws RemoteException {
+        return server.getTempReadOnlyURL(id,fatherId, pos);
     }
 }

@@ -87,15 +87,28 @@
 
                     </content>
                     <content>
-                        <TableView fx:id="logTableView" prefHeight="200.0" prefWidth="200.0">
-                            <columns>
-                                <TableColumn fx:id="modifyTypeTableColumn" prefWidth="75.0" text="操作类型" />
-                                <TableColumn fx:id="modifyFileNameTableColumn" prefWidth="75.0" text="文件名" />
-                                <TableColumn fx:id="modifyFileSizeTableColumn" prefWidth="75.0" text="文件大小" />
-                                <TableColumn fx:id="modifyProcessTableColumn" prefWidth="75.0" text="操作进度" />
-                                <TableColumn fx:id="modifyTimeTableColumn" prefWidth="75.0" text="操作时间" />
-                            </columns>
-                        </TableView>
+                        <BorderPane>
+                            <center>
+                                <TableView fx:id="logTableView" prefHeight="200.0" prefWidth="200.0">
+                                    <columns>
+                                        <TableColumn fx:id="modifyTypeTableColumn" prefWidth="75.0" text="操作类型" />
+                                        <TableColumn fx:id="modifyFileNameTableColumn" prefWidth="75.0" text="文件名" />
+                                        <TableColumn fx:id="modifyFileSizeTableColumn" prefWidth="75.0" text="文件大小" />
+                                        <TableColumn fx:id="modifyTimeTableColumn" prefWidth="75.0" text="操作时间" />
+                                        <TableColumn fx:id="modifyProcessTableColumn" prefWidth="75.0" text="操作进度" />
+                                        <TableColumn fx:id="logListSpeedTableColumn" prefWidth="75.0" text="速度" />
+                                    </columns>
+                                </TableView>
+                            </center>
+                            <top>
+                                <ToolBar prefHeight="40.0" prefWidth="200.0" BorderPane.alignment="TOP_RIGHT">
+                                    <items>
+                                        <Button fx:id="logListBegin" mnemonicParsing="false" onAction="#transferBegin" text="全部开始" />
+                                        <Button fx:id="logListPause" mnemonicParsing="false" onAction="#transferPause" text="全部暂停" />
+                                    </items>
+                                </ToolBar>
+                            </top>
+                        </BorderPane>
                     </content>
                 </Tab>
                 <Tab text="绑定">
@@ -124,7 +137,7 @@
                             <center>
                                 <TableView fx:id="shareListTableView" prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER">
                                     <contextMenu>
-                                        <ContextMenu fx:id="contextMenu1">
+                                        <ContextMenu fx:id="shareContextMenu">
                                             <items>
                                                 <MenuItem fx:id="shareOpen" mnemonicParsing="false" onAction="#shareOpen" text="打开" />
                                                 <MenuItem fx:id="shareDownload" mnemonicParsing="false" onAction="#shareDownload" text="下载" />
@@ -132,6 +145,7 @@
                                                 <MenuItem fx:id="shareRemove" mnemonicParsing="false" onAction="#shareRemove" text="删除" />
                                                 <MenuItem fx:id="shareBind" mnemonicParsing="false" onAction="#shareBind" text="绑定" />
                                                 <MenuItem fx:id="shareNewDirectory" mnemonicParsing="false" onAction="#shareNewFileDirectory" text="新建文件夹" />
+                                                <MenuItem fx:id="shareUpload" mnemonicParsing="false" onAction="#shareUploadFile" text="上传" />
                                             </items>
                                         </ContextMenu>
                                     </contextMenu>

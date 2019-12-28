@@ -37,7 +37,9 @@ public class ConnectController implements Initializable {
             String ip = ipTextField.getText();
             int port = Integer.parseInt(portTextField.getText());
             Net tmp = (Net) Naming.lookup("rmi://"+ip+":"+port+"/"+"Server");
-            UserData.setIp("rmi://"+ip+":"+port+"/"+"Server");
+            UserData.setServerIp("rmi://"+ip+":"+port+"/"+"Server");
+            UserData.setReaderIp("rmi://"+ip+":"+port+"/"+"ServerReader");
+            UserData.setWriterIp("rmi://"+ip+":"+port+"/"+"ServerWriter");
             Client.setServerIp(ip);
             Client.setPort(port);
             Client.setNet(tmp);

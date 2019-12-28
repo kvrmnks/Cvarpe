@@ -57,12 +57,12 @@
                 <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
             </rowConstraints>
             <children>
-                <Button fx:id="closeButton" alignment="CENTER" contentDisplay="CENTER" mnemonicParsing="false" onAction="#close" prefHeight="23.0" prefWidth="71.0" text="退出" GridPane.columnIndex="2">
+                <Button fx:id="closeButton" alignment="CENTER" contentDisplay="CENTER" mnemonicParsing="false" onAction="#close" prefHeight="23.0" prefWidth="80.0" text="退出" GridPane.columnIndex="2">
                     <GridPane.margin>
                         <Insets left="20.0" />
                     </GridPane.margin>
                 </Button>
-                <Button fx:id="loginButton" alignment="CENTER" mnemonicParsing="false" onAction="#login" prefHeight="23.0" prefWidth="68.0" text="登录">
+                <Button fx:id="loginButton" alignment="CENTER" mnemonicParsing="false" onAction="#login" prefHeight="23.0" prefWidth="76.0" text="登录">
                     <opaqueInsets>
                         <Insets />
                     </opaqueInsets>
@@ -70,7 +70,7 @@
                         <Insets left="20.0" />
                     </GridPane.margin>
                 </Button>
-                <Button fx:id="logupButton" mnemonicParsing="false" onAction="#logup" prefHeight="23.0" prefWidth="60.0" text="注册" GridPane.columnIndex="1">
+                <Button fx:id="logupButton" mnemonicParsing="false" onAction="#logup" prefHeight="23.0" prefWidth="71.0" text="注册" GridPane.columnIndex="1">
                     <GridPane.margin>
                         <Insets left="20.0" />
                     </GridPane.margin>

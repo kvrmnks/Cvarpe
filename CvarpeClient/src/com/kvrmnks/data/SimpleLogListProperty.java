@@ -12,7 +12,7 @@ import javafx.scene.layout.HBox;
 
 public class SimpleLogListProperty {
 
-    private final SimpleStringProperty type, name, time;
+    private final SimpleStringProperty type, name, time,speed;
     private final SimpleStringProperty size;
     private final SimpleDoubleProperty process;
     private final ProgressIndicator progressBar;
@@ -36,6 +36,7 @@ public class SimpleLogListProperty {
         this.name = new SimpleStringProperty();
         this.time = new SimpleStringProperty();
         this.size = new SimpleStringProperty();
+        this.speed = new SimpleStringProperty();
         this.process = new SimpleDoubleProperty();
         this.transData = transData;
         if (type == TYPE_DOWNLOAD) {
@@ -50,6 +51,7 @@ public class SimpleLogListProperty {
         this.progressBar = new ProgressIndicator(process);
         this.hbox = new HBox();
         this.label = new Label();
+
         build();
     }
 
@@ -109,6 +111,18 @@ public class SimpleLogListProperty {
 
     public String getTime() {
         return time.get();
+    }
+
+    public String getSpeed() {
+        return speed.get();
+    }
+
+    public SimpleStringProperty speedProperty() {
+        return speed;
+    }
+
+    public void setSpeed(String speed) {
+        this.speed.set(speed);
     }
 
     public SimpleStringProperty timeProperty() {
