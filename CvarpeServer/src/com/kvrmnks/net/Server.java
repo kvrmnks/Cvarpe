@@ -186,10 +186,6 @@ public class Server extends UnicastRemoteObject implements Net {
         return myFile.sonDirectory.get(name);
     }
 
-    @Override
-    synchronized public TransDataList getTransDataList(String userName) throws NoSuchUserException {
-        return DataBase.getTransDataListByName(userName);
-    }
 
     @Override
     synchronized public String getReadOnlyURL(long id, long fatherId, String pos) {
@@ -209,11 +205,6 @@ public class Server extends UnicastRemoteObject implements Net {
     @Override
     synchronized public String getTempReadAndWriteURL(long id, long fatherId, String pos) {
         return "PreEditor^" + MyDate.getNowTimeStamp() + "^$" + pos + ":" + id + ":" + fatherId;
-    }
-
-    @Override
-    synchronized public void modifyTransDataList(String userName, TransDataList transDataList) throws NoUserException {
-        DataBase.setTransDataList(userName, transDataList);
     }
 
 

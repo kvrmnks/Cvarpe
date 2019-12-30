@@ -7,8 +7,11 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.ArrayList;
 
 public class ServerReader extends UnicastRemoteObject implements NetReader {
+
+    int pre = 0;
 
     public ServerReader() throws RemoteException {
     }
@@ -31,8 +34,16 @@ public class ServerReader extends UnicastRemoteObject implements NetReader {
     }
 
     @Override
-    public int read(byte[] buffer, int begin, int length) throws IOException {
-        return randomAccessFile.read(buffer, begin, length);
+    public int getSize() throws RemoteException {
+        return pre;
+    }
+
+
+    @Override
+    public byte[] read(int begin, int length) throws IOException {
+        byte[] buffer = new byte[length];
+        pre = randomAccessFile.read(buffer,begin,length);
+        return buffer;
     }
 
     @Override

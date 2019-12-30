@@ -22,7 +22,6 @@ public class SimpleLogListProperty {
     private DownLoader downLoader;
     public static final int TYPE_DOWNLOAD = 1;
     public static final int TYPE_UPLOAD = 2;
-    private TransData transData;
     private void build() {
         this.label.textProperty().unbind();
         this.label.textProperty().bind(this.process.multiply(100).asString().concat("%"));
@@ -31,14 +30,13 @@ public class SimpleLogListProperty {
         this.hbox.getChildren().addAll(this.progressBar, this.label);
     }
 
-    public SimpleLogListProperty(int type, String name, String time, long size, double process, TransData transData) {
+    public SimpleLogListProperty(int type, String name, String time, long size, double process) {
         this.type = new SimpleStringProperty();
         this.name = new SimpleStringProperty();
         this.time = new SimpleStringProperty();
         this.size = new SimpleStringProperty();
         this.speed = new SimpleStringProperty();
         this.process = new SimpleDoubleProperty();
-        this.transData = transData;
         if (type == TYPE_DOWNLOAD) {
             this.type.setValue("下载");
         } else {
@@ -59,13 +57,6 @@ public class SimpleLogListProperty {
         return uploader;
     }
 
-    public TransData getTransData() {
-        return transData;
-    }
-
-    public void setTransData(TransData transData) {
-        this.transData = transData;
-    }
 
     public void setDownLoader(DownLoader downLoader){}
 

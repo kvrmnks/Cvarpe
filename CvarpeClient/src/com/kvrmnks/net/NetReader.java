@@ -4,6 +4,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
+import java.util.ArrayList;
 
 public interface NetReader extends Remote {
     void setFile(long id, String name) throws RemoteException, FileNotFoundException;
@@ -12,7 +13,9 @@ public interface NetReader extends Remote {
 
     void seek(long pos) throws RemoteException, IOException;
 
-    int read(byte[] buffer, int begin, int length) throws RemoteException, IOException;
+    int getSize() throws RemoteException;
+
+    byte[] read(int begin, int length) throws RemoteException,IOException;
 
     void close() throws RemoteException, IOException;
 }

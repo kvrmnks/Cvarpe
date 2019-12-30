@@ -1,38 +1,26 @@
 package com.kvrmnks.data;
 
-import java.io.Serializable;
-
-public class TransData implements Serializable {
-    private String time,pos, name, realPos;
-    private long size;
+public class YRL {
+    private long id;
+    private String pos,name,realPos;
     private int type;
-    public static final int TYPE_UPLOAD = 2;
-    public static final int TYPE_DOWNLOAD = 1;
+    public static final int TYPE_FILE = 1;
+    public static final int TYPE_DIRECTORY = 2;
 
-    private TransData() {
-    }
-
-    public TransData(String pos, String name, String realPos, int type) {
+    public YRL(long id,String pos,String name,String realPos,int type){
+        this.id = id;
         this.pos = pos;
         this.name = name;
         this.realPos = realPos;
         this.type = type;
     }
 
-    public String getTime() {
-        return time;
+    public long getId() {
+        return id;
     }
 
-    public void setTime(String time) {
-        this.time = time;
-    }
-
-    public long getSize() {
-        return size;
-    }
-
-    public void setSize(long size) {
-        this.size = size;
+    public void setId(long id) {
+        this.id = id;
     }
 
     public String getPos() {

@@ -79,6 +79,7 @@ public class MainController implements Initializable {
     public Button logListPause;
     public MenuItem shareUpload;
     public ContextMenu shareContextMenu;
+    public ContextMenu logMenu;
     private Main application;
     private ObservableList<SimpleMyFileProperty> data = FXCollections.observableArrayList();
     private ObservableList<SimpleMyFileProperty> searchResult = FXCollections.observableArrayList();
@@ -91,7 +92,7 @@ public class MainController implements Initializable {
     private Stack<Long> shareIdStack = new Stack<>();
     private Stack<Long> shareDirectoryStack = new Stack<>();
     private String curShareURL = "";
-
+    private SimpleLogListProperty curLogListProperty;
     private void initFileTab() {
         fileTypeTableColumn.setCellValueFactory(new PropertyValueFactory<>("type"));
         fileNameTableColumn.setCellValueFactory(new PropertyValueFactory<>("name"));
@@ -197,6 +198,16 @@ public class MainController implements Initializable {
                 return new SimpleObjectProperty<ProgressIndicator>(param.getValue().getProgressBar());
             }
         });
+        logTableView.setRowFactory(param -> {
+            TableRow<SimpleLogListProperty> row = new TableRow<>();
+
+            row.setOnMouseClicked(event -> {
+                logMenu.show(logTableView,event.getScreenX(),event.getScreenY());
+                TableRow<SimpleLogListProperty> r = (TableRow<SimpleLogListProperty>)event.getSource();
+                setCurLogListProperty(r.getItem());
+            });
+            return row;
+        });
         modifyTimeTableColumn.setCellValueFactory(new PropertyValueFactory<>("time"));
         logTableView.setItems(logdata);
     }
@@ -236,12 +247,17 @@ public class MainController implements Initializable {
         });
     }
 
+    private void initLogList(){
+
+    }
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         currentPath = new SimpleStringProperty("Editor^0^/" + UserData.getUserName() + "/");
         initFileTab();
         initSearchTab();
         initLogTab();
+        initLogList();
         initShareTab();
     }
 
@@ -251,6 +267,10 @@ public class MainController implements Initializable {
 
     private void setShareMyFileProperty(SimpleMyFileProperty myFileProperty) {
         this.shareMyFileProperty = myFileProperty;
+    }
+
+    private void setCurLogListProperty(SimpleLogListProperty simpleLogListProperty){
+        this.curLogListProperty = simpleLogListProperty;
     }
 
     public void setApp(Main app) {
@@ -331,7 +351,6 @@ public class MainController implements Initializable {
                 , MyDate.getCurTime()
                 , simpleMyFileProperty.getRsize()
                 , 0
-                , null
         );
         logdata.add(logListProperty);
         Client.downLoad(idDirectoryStack.peek(), currentPath.getValueSafe(), simpleMyFileProperty.getName(), f.getAbsolutePath() + "/" + simpleMyFileProperty.getName(), logListProperty);
@@ -445,7 +464,6 @@ public class MainController implements Initializable {
                 , MyDate.getCurTime()
                 , f.length()
                 , 0
-                , null
         );
         logdata.add(logListProperty);
         Client.upload(idStack.peek(), currentPath.getValueSafe(), f.getName(), f.getAbsolutePath(), logListProperty);
@@ -572,7 +590,6 @@ public class MainController implements Initializable {
                 , MyDate.getCurTime()
                 , shareMyFileProperty.getRsize()
                 , 0
-                , null
         );
         logdata.add(logListProperty);
         Client.downLoad(shareDirectoryStack.peek(), curShareURL, shareMyFileProperty.getName(), f.getAbsolutePath() + "/" + shareMyFileProperty.getName(), logListProperty);
@@ -591,7 +608,6 @@ public class MainController implements Initializable {
                 , MyDate.getCurTime()
                 , f.length()
                 , 0
-                , null
         );
         logdata.add(logListProperty);
         Client.upload(shareDirectoryStack.peek(), curShareURL, f.getName(), f.getAbsolutePath(), logListProperty);
@@ -652,12 +668,35 @@ public class MainController implements Initializable {
     }
 
     public void transferPause(ActionEvent actionEvent) {
+        SimpleLogListProperty[] ret = new SimpleLogListProperty[logdata.size()];
+        logdata.toArray(ret);
+        for(SimpleLogListProperty x : ret){
 
+        }
     }
 
     public void transferBegin(ActionEvent actionEvent) {
+        SimpleLogListProperty[] ret = new SimpleLogListProperty[logdata.size()];
+        logdata.toArray(ret);
+        for(SimpleLogListProperty x : ret){
 
+        }
     }
 
 
+    public void logPause(ActionEvent actionEvent) {
+        if(curLogListProperty == null) return;
+    }
+
+    public void logStart(ActionEvent actionEvent) {
+        if(curLogListProperty == null) return;
+    }
+
+    public void logDelete(ActionEvent actionEvent) {
+        if(curLogListProperty == null) return;
+    }
+
+    public void logProperty(ActionEvent actionEvent) {
+        if(curLogListProperty == null) return;
+    }
 }

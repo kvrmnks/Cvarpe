@@ -136,9 +136,6 @@ public class Main extends Application {
     }
 
     public static void main(String[] args) {
-        //int a = 1/0;
-       // Runtime.getRuntime().addShutdownHook(new Thread(DataBase::saveData));
-        //Net server = (Net) Naming.lookup("")
         launch(args);
     }
 }

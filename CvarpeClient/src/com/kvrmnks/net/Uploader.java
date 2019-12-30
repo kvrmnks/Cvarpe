@@ -5,18 +5,19 @@ import com.kvrmnks.data.*;
 import com.kvrmnks.exception.*;
 
 import java.io.*;
+import java.net.MalformedURLException;
 import java.rmi.Naming;
 import java.rmi.NotBoundException;
+import java.rmi.RemoteException;
 
-public class Uploader implements Runnable, Serializable {
-    private static final int PACKAGE_SIZE = 1024;
+public class Uploader extends TransLoader implements Runnable, Serializable {
+    private static final int PACKAGE_SIZE = 65536*2;
     private long id, curSize, wholeSize;
     private String pos, name, realPos;
     private SimpleLogListProperty simpleLogListProperty;
     private Net server;
     private InfoFile infoFile;
     private File realFile;
-    private boolean flag = false;
     private NetWriter serverWriter;
 
     public Uploader(long id, String pos, String name, String realPos, SimpleLogListProperty simpleLogListProperty) throws IOException, NotBoundException, NoAccessException, NoUserException, NoFileException, FileExistedException, ClassNotFoundException, FileStructureException {
@@ -25,6 +26,10 @@ public class Uploader implements Runnable, Serializable {
         this.name = name;
         this.realPos = realPos;
         this.simpleLogListProperty = simpleLogListProperty;
+
+    }
+
+    private void init() throws IOException, NotBoundException, ClassNotFoundException, NoUserException, NoAccessException, NoFileException, FileExistedException, FileStructureException {
         realFile = new File(realPos);
         server = (Net) Naming.lookup(UserData.getServerIp());
         serverWriter = (NetWriter) Naming.lookup(UserData.getWriterIp());
@@ -41,7 +46,7 @@ public class Uploader implements Runnable, Serializable {
             infoFile = new InfoFile();
             infoFile.setMd5(MD5.getMD5OfFile(realPos));
             infoFile.setSize(0);
-            server.writeInfoFile(id, pos, name, infoFile);
+            server.writeInfoFile(id, pos, name+".info", infoFile);
         } else {
             infoFile = server.getInfoFile(id, pos, name + ".info");
             if (!infoFile.getMd5().equals(MD5.getMD5OfFile(realPos)))
@@ -52,10 +57,6 @@ public class Uploader implements Runnable, Serializable {
         serverWriter.setFile(myFile.getId(),myFile.getName());
         simpleLogListProperty.setProcess((double) curSize / realFile.length());
         wholeSize = realFile.length();
-    }
-
-    public void stop() {
-        flag = true;
     }
 
     @Deprecated
@@ -113,8 +114,9 @@ public class Uploader implements Runnable, Serializable {
     @Override
     public void run() {
         try {
+            init();
             transfer();
-        } catch (IOException | ClassNotFoundException | NoUserException | NoAccessException | NoFileException e) {
+        } catch (IOException | ClassNotFoundException | NoUserException | NoAccessException | NoFileException | FileStructureException | NotBoundException | FileExistedException e) {
             e.printStackTrace();
         }
     }

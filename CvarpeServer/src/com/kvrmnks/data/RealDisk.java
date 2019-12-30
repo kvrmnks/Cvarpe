@@ -26,7 +26,7 @@ public class RealDisk {
     synchronized public static void deleteFile(MyFile myfile) {
         String command = Disk.LOCATION + "_" + myfile.getId() + "_" + myfile.getName();
         File file = new File(command);
-        file.delete();
+        boolean flag = file.delete();
     }
 
     synchronized public static void deleteFileDirectory(MyFile myfile) {

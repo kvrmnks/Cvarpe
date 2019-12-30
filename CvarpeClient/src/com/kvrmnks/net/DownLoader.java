@@ -10,35 +10,46 @@ import com.kvrmnks.exception.NoUserException;
 import sun.java2d.pipe.BufferedPaints;
 
 import java.io.*;
+import java.net.MalformedURLException;
 import java.rmi.Naming;
 import java.rmi.NotBoundException;
+import java.rmi.RemoteException;
+import java.util.ArrayList;
 import java.util.Scanner;
 
-public class DownLoader implements Runnable, Serializable {
-    private static final int PACKAGE_SIZE = 1024;
+public class DownLoader extends TransLoader implements Runnable, Serializable {
+    private static final int PACKAGE_SIZE = 65536*2;
     private long id;
     private String pos, realPos, md5, name;
-    private boolean flag = false;
+    //private boolean flag = false;
     private SimpleLogListProperty simpleLogListProperty;
     private Net server;
     private File realFile, infoFile;
     private long curSize, wholeSize;
     private NetReader serverReader;
 
-    public DownLoader(long id, String pos, String name, String realPos, SimpleLogListProperty simpleLogListProperty) throws IOException, NotBoundException, ClassNotFoundException, NoUserException, NoAccessException, NoFileException {
+    public DownLoader(long id, String pos, String name, String realPos, SimpleLogListProperty simpleLogListProperty) {
         this.id = id;
         this.pos = pos;
         this.name = name;
         this.realPos = realPos;
         this.simpleLogListProperty = simpleLogListProperty;
         md5 = "";
+    }
+
+    private void init() throws IOException, NotBoundException, ClassNotFoundException, NoUserException, NoAccessException, NoFileException {
         server = (Net) Naming.lookup(UserData.getServerIp());
         serverReader = (NetReader) Naming.lookup(UserData.getReaderIp());
         buildFile();
+
         MyFile myFile = server.getStructure(id, pos);
         myFile = myFile.sonFile.get(name);
-        serverReader.setFile(myFile.getId(),myFile.getName());
+
         wholeSize = myFile.getSize();
+        serverReader.setFile(myFile.getId(),myFile.getName());
+        serverReader.seek(curSize);
+
+
         simpleLogListProperty.setProcess(((double) curSize) / ((double) myFile.getSize()));
     }
 
@@ -57,10 +68,6 @@ public class DownLoader implements Runnable, Serializable {
             if (scan.hasNextLong())
                 wholeSize = scan.nextLong();
         }
-    }
-
-    public void stop() {
-        flag = true;
     }
 
     @Deprecated
@@ -103,15 +110,15 @@ public class DownLoader implements Runnable, Serializable {
     }
 
     private void transfer() throws IOException {
-        BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(new FileOutputStream(realFile,true));
-        byte[] buffer = new byte[PACKAGE_SIZE];
+        DataOutputStream dataOutputStream = new DataOutputStream(new FileOutputStream(realFile,true));
 
         long pretime = MyDate.getNowTimeStamp();
         long preData = curSize;
 
         while(curSize < wholeSize && (!flag)){
-            int tmp = serverReader.read(buffer,0,PACKAGE_SIZE);
-            bufferedOutputStream.write(buffer,0,tmp);
+            byte[] buffer  = serverReader.read(0,PACKAGE_SIZE);
+            int tmp = serverReader.getSize();
+            dataOutputStream.write(buffer,0,tmp);
             curSize += tmp;
             if ((double) curSize / wholeSize > simpleLogListProperty.getProcess() + 0.01) {
                 simpleLogListProperty.setProcess((double) curSize / wholeSize);
@@ -128,7 +135,7 @@ public class DownLoader implements Runnable, Serializable {
             infoFile.delete();
             simpleLogListProperty.setProcess(1);
         }
-        bufferedOutputStream.close();
+        dataOutputStream.close();
         serverReader.close();
 
     }
@@ -136,8 +143,9 @@ public class DownLoader implements Runnable, Serializable {
     @Override
     public void run() {
         try {
+            init();
             transfer();
-        } catch (IOException e) {
+        } catch (IOException | NotBoundException | NoUserException | NoFileException | NoAccessException | ClassNotFoundException e) {
             e.printStackTrace();
         }
     }

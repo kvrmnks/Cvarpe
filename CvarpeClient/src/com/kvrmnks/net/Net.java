@@ -2,10 +2,8 @@ package com.kvrmnks.net;
 
 import com.kvrmnks.data.InfoFile;
 import com.kvrmnks.data.MyFile;
-import com.kvrmnks.data.TransDataList;
 import com.kvrmnks.exception.*;
 
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
@@ -69,8 +67,6 @@ public interface Net extends Remote {
     @Deprecated
     MyFile getFileDirectory(String pos, String name) throws RemoteException, ClassNotFoundException, NoUserException, NoFileException, IOException, NoAccessException;
 
-    TransDataList getTransDataList(String userName) throws RemoteException, NoSuchUserException;
-
     String getReadOnlyURL(long id, long fatherId, String pos) throws RemoteException;
 
     String getReadAndWriteURL(long id, long fatherId, String pos) throws RemoteException;
@@ -79,6 +75,4 @@ public interface Net extends Remote {
 
     String getTempReadAndWriteURL(long id, long fatherId, String pos) throws RemoteException;
 
-    @Deprecated
-    void modifyTransDataList(String userName, TransDataList transDataList) throws RemoteException, NoUserException;
 }
