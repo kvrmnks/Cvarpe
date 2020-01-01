@@ -71,10 +71,10 @@ public class Uploader implements Runnable {
     }
 
     private void createRealFile() throws IOException {
-        realFile = new File(RealDisk.LOCATION + "_" + myFile.sonFile.get(name).getId() + "_" + name);
+        realFile = new File(Disk.LOCATION + "_" + myFile.sonFile.get(name).getId() + "_" + name);
         if (!realFile.exists())
             realFile.createNewFile();
-        infoFile = new File(RealDisk.LOCATION + "_" + myFile.sonFile.get(name + ".info").getId() + "_" + name + ".info");
+        infoFile = new File(Disk.LOCATION + "_" + myFile.sonFile.get(name + ".info").getId() + "_" + name + ".info");
         if (!infoFile.exists())
             infoFile.createNewFile();
 

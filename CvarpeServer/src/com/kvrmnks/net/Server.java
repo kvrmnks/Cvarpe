@@ -101,6 +101,16 @@ public class Server extends UnicastRemoteObject implements Net {
         disk.mainTain();
     }
 
+    @Override
+    public void createFile(long id, String pos, String name, long size, long modifiedTime) throws ClassNotFoundException, NoUserException, NoFileException, IOException, NoAccessException, FileExistedException {
+        Disk disk = Disk.constructByUserName(getUserName(pos));
+        disk.createFile(id,pos,name);
+        MyFile myFile = disk.getStructure(id,pos);
+        myFile.sonFile.get(name).setSize(size);
+        myFile.sonFile.get(name).setModifyTime(MyDate.convert(""+modifiedTime));
+        disk.mainTain();
+    }
+
     synchronized public void createDirectory(String pos, String name) throws NoUserException, NoFileException, ClassNotFoundException, NoAccessException, FileExistedException, IOException {
         Disk disk = Disk.constructByUserName(getUserName(pos));
         disk.createFileDirectory(pos, name);
@@ -165,7 +175,7 @@ public class Server extends UnicastRemoteObject implements Net {
         if (!file.sonFile.containsKey(name))
             throw new NoFileException();
         file = file.sonFile.get(name);
-        return MD5.getMD5OfFile(RealDisk.LOCATION + "__" + file.getId() + "__" + file.getName());
+        return MD5.getMD5OfFile(Disk.LOCATION + "__" + file.getId() + "__" + file.getName());
     }
 
     @Override

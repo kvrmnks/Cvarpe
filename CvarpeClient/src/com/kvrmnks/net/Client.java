@@ -46,7 +46,7 @@ public class Client {
         myFile.buildPath();
         return myFile;
     }
-
+@Deprecated
     public static void downLoad(long id, String pos, String name, String realPos, SimpleLogListProperty simpleLogListProperty) throws IOException, ClassNotFoundException, NoUserException, NoAccessException, NoFileException, NotBoundException {
         DownLoader downLoader = new DownLoader(id, pos, name, realPos, simpleLogListProperty);
         new Thread(downLoader).start();
@@ -59,6 +59,7 @@ public class Client {
      * localFile 待上传的本地文件
      * ip 服务器的地址
      * */
+    @Deprecated
     public static void upload(long id,String pos,String name,String realPos,SimpleLogListProperty simpleLogListProperty) throws IOException, NoUserException, NoAccessException, NoFileException, ClassNotFoundException, FileStructureException, NotBoundException, FileExistedException {
         Uploader uploader = new Uploader(id,pos,name,realPos,simpleLogListProperty);
         new Thread(uploader).start();

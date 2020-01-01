@@ -3,15 +3,15 @@ package com.kvrmnks.data;
 import java.io.Serializable;
 
 public class InfoFile implements Serializable {
-    private String md5;
+    private String modifyTime;
     private long size;
 
-    public String getMd5() {
-        return md5;
+    public String getModifyTime() {
+        return modifyTime;
     }
 
-    public void setMd5(String md5) {
-        this.md5 = md5;
+    public void setModifyTime(String md5) {
+        this.modifyTime = md5;
     }
 
     public long getSize() {

@@ -1,5 +1,6 @@
 package com.kvrmnks.net;
 
+import com.kvrmnks.data.Disk;
 import com.kvrmnks.data.RealDisk;
 
 import java.io.*;
@@ -14,7 +15,7 @@ public class ServerWriter extends UnicastRemoteObject implements NetWriter {
     }
     @Override
     public void setFile(long id, String name) throws RemoteException,FileNotFoundException {
-        File file = new File(RealDisk.LOCATION + "_" + id + "_" + name);
+        File file = new File(Disk.LOCATION + "_" + id + "_" + name);
         dataOutputStream = new DataOutputStream(new FileOutputStream(file, true));
     }
 

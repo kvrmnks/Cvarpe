@@ -4,6 +4,7 @@ import com.kvrmnks.UI.ConnectController;
 import com.kvrmnks.UI.LoginController;
 import com.kvrmnks.UI.LogupController;
 import com.kvrmnks.UI.MainController;
+import com.kvrmnks.data.UserData;
 import com.kvrmnks.net.Net;
 import javafx.application.Application;
 import javafx.event.EventHandler;
@@ -136,6 +137,7 @@ public class Main extends Application {
     }
 
     public static void main(String[] args) {
+        Runtime.getRuntime().addShutdownHook(new Thread(UserData::save));
         launch(args);
     }
 }

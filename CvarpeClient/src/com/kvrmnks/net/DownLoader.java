@@ -4,6 +4,7 @@ import com.kvrmnks.data.MyDate;
 import com.kvrmnks.data.MyFile;
 import com.kvrmnks.data.SimpleLogListProperty;
 import com.kvrmnks.data.UserData;
+import com.kvrmnks.exception.Log;
 import com.kvrmnks.exception.NoAccessException;
 import com.kvrmnks.exception.NoFileException;
 import com.kvrmnks.exception.NoUserException;
@@ -20,13 +21,14 @@ import java.util.Scanner;
 public class DownLoader extends TransLoader implements Runnable, Serializable {
     private static final int PACKAGE_SIZE = 65536*2;
     private long id;
-    private String pos, realPos, md5, name;
+    private String pos, realPos, modifyTime, name;
     //private boolean flag = false;
     private SimpleLogListProperty simpleLogListProperty;
     private Net server;
     private File realFile, infoFile;
     private long curSize, wholeSize;
     private NetReader serverReader;
+    private boolean isEqual = true;
 
     public DownLoader(long id, String pos, String name, String realPos, SimpleLogListProperty simpleLogListProperty) {
         this.id = id;
@@ -34,7 +36,7 @@ public class DownLoader extends TransLoader implements Runnable, Serializable {
         this.name = name;
         this.realPos = realPos;
         this.simpleLogListProperty = simpleLogListProperty;
-        md5 = "";
+        modifyTime = "";
     }
 
     private void init() throws IOException, NotBoundException, ClassNotFoundException, NoUserException, NoAccessException, NoFileException {
@@ -44,6 +46,20 @@ public class DownLoader extends TransLoader implements Runnable, Serializable {
 
         MyFile myFile = server.getStructure(id, pos);
         myFile = myFile.sonFile.get(name);
+
+        if(!modifyTime.equals("")){
+            if((!modifyTime.equals(myFile.getModifyTime())) || (wholeSize != myFile.getSize())){
+                isEqual = false;
+                return;
+            }
+        }else{
+            modifyTime = myFile.getModifyTime();
+            wholeSize = myFile.getSize();
+            PrintWriter printWriter = new PrintWriter(new FileOutputStream(infoFile));
+            printWriter.println(modifyTime);
+            printWriter.println(wholeSize);
+            printWriter.close();
+        }
 
         wholeSize = myFile.getSize();
         serverReader.setFile(myFile.getId(),myFile.getName());
@@ -64,7 +80,7 @@ public class DownLoader extends TransLoader implements Runnable, Serializable {
         else {
             Scanner scan = new Scanner(realFile);
             if (scan.hasNext())
-                md5 = scan.next();
+                modifyTime = scan.next();
             if (scan.hasNextLong())
                 wholeSize = scan.nextLong();
         }
@@ -134,6 +150,8 @@ public class DownLoader extends TransLoader implements Runnable, Serializable {
         if(curSize >= wholeSize){
             infoFile.delete();
             simpleLogListProperty.setProcess(1);
+            simpleLogListProperty.setFinished(true);
+            simpleLogListProperty.setCondition("完成");
         }
         dataOutputStream.close();
         serverReader.close();
@@ -143,8 +161,11 @@ public class DownLoader extends TransLoader implements Runnable, Serializable {
     @Override
     public void run() {
         try {
+            Log.log("begin");
             init();
-            transfer();
+            if(isEqual)
+                transfer();
+            Log.log("inter");
         } catch (IOException | NotBoundException | NoUserException | NoFileException | NoAccessException | ClassNotFoundException e) {
             e.printStackTrace();
         }

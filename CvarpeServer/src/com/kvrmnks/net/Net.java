@@ -17,32 +17,34 @@ public interface Net extends Remote {
 
     void createFile(long id, String pos, String name) throws RemoteException, ClassNotFoundException, NoUserException, NoFileException, IOException, NoAccessException, FileExistedException;
 
-    void createFile(long id, String pos, String name, long size) throws ClassNotFoundException, NoUserException, NoFileException, IOException, NoAccessException, FileExistedException;
+    void createFile(long id, String pos, String name, long size) throws RemoteException,ClassNotFoundException, NoUserException, NoFileException, IOException, NoAccessException, FileExistedException;
+
+    void createFile(long id,String pos,String name,long size,long modifiedTime) throws RemoteException,ClassNotFoundException, NoUserException, NoFileException, IOException, NoAccessException, FileExistedException;
 
     @Deprecated
     void createDirectory(String pos, String name) throws RemoteException, IOException, NoUserException, NoFileException, ClassNotFoundException, NoAccessException, FileExistedException;
 
-    void createDirectory(long id, String pos, String name) throws ClassNotFoundException, NoUserException, NoFileException, IOException, NoAccessException, FileExistedException;
+    void createDirectory(long id, String pos, String name) throws RemoteException,ClassNotFoundException, NoUserException, NoFileException, IOException, NoAccessException, FileExistedException;
 
     @Deprecated
     void deleteFileDirectory(String pos, String name) throws RemoteException, IOException, ClassNotFoundException, NoUserException, NoFileException, NoAccessException;
 
-    void deleteFileDirectory(long id, String pos, String name) throws ClassNotFoundException, NoUserException, NoFileException, IOException, NoAccessException;
+    void deleteFileDirectory(long id, String pos, String name) throws RemoteException,ClassNotFoundException, NoUserException, NoFileException, IOException, NoAccessException;
 
     @Deprecated
     void deleteFile(String pos, String name) throws RemoteException, IOException, ClassNotFoundException, NoUserException, NoFileException, NoAccessException;
 
-    void deleteFile(long id, String pos, String name) throws ClassNotFoundException, NoUserException, NoFileException, IOException, NoAccessException;
+    void deleteFile(long id, String pos, String name) throws RemoteException,ClassNotFoundException, NoUserException, NoFileException, IOException, NoAccessException;
 
     @Deprecated
     void renameFileDirectory(String pos, String name, String newName) throws RemoteException, IOException, ClassNotFoundException, NoUserException, NoFileException, NoAccessException, FileExistedException;
 
-    void renameFileDirectory(long id, String pos, String name, String newName) throws ClassNotFoundException, NoUserException, NoFileException, IOException, NoAccessException, FileExistedException;
+    void renameFileDirectory(long id, String pos, String name, String newName) throws RemoteException,ClassNotFoundException, NoUserException, NoFileException, IOException, NoAccessException, FileExistedException;
 
     @Deprecated
     void renameFile(String pos, String name, String newName) throws RemoteException, IOException, ClassNotFoundException, NoUserException, NoFileException, NoAccessException, FileExistedException;
 
-    void renameFile(long id, String pos, String name, String newName) throws ClassNotFoundException, NoUserException, NoFileException, IOException, NoAccessException, FileExistedException;
+    void renameFile(long id, String pos, String name, String newName) throws RemoteException,ClassNotFoundException, NoUserException, NoFileException, IOException, NoAccessException, FileExistedException;
 
     boolean logIn(String userName, String userPassword) throws RemoteException, IOException;
 

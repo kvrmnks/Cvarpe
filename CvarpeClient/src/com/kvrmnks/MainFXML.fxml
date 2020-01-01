@@ -91,6 +91,7 @@
                             <center>
                                 <TableView fx:id="logTableView" prefHeight="200.0" prefWidth="200.0">
                                     <columns>
+                                        <TableColumn fx:id="logConditionTableColumn" prefWidth="75.0" text="状态" />
                                         <TableColumn fx:id="modifyTypeTableColumn" prefWidth="75.0" text="操作类型" />
                                         <TableColumn fx:id="modifyFileNameTableColumn" prefWidth="75.0" text="文件名" />
                                         <TableColumn fx:id="modifyFileSizeTableColumn" prefWidth="75.0" text="文件大小" />
@@ -98,16 +99,16 @@
                                         <TableColumn fx:id="modifyProcessTableColumn" prefWidth="75.0" text="操作进度" />
                                         <TableColumn fx:id="logListSpeedTableColumn" prefWidth="75.0" text="速度" />
                                     </columns>
-                           <contextMenu>
-                              <ContextMenu fx:id="logMenu">
-                                 <items>
-                                    <MenuItem mnemonicParsing="false" onAction="#logPause" text="暂停" />
-                                    <MenuItem mnemonicParsing="false" onAction="#logStart" text="开始" />
-                                    <MenuItem mnemonicParsing="false" onAction="#logDelete" text="删除" />
-                                    <MenuItem mnemonicParsing="false" onAction="#logProperty" text="属性" />
-                                 </items>
-                              </ContextMenu>
-                           </contextMenu>
+                                    <contextMenu>
+                                        <ContextMenu fx:id="logMenu">
+                                            <items>
+                                                <MenuItem mnemonicParsing="false" onAction="#logPause" text="暂停" />
+                                                <MenuItem mnemonicParsing="false" onAction="#logStart" text="开始" />
+                                                <MenuItem mnemonicParsing="false" onAction="#logDelete" text="删除" />
+                                                <MenuItem mnemonicParsing="false" onAction="#logProperty" text="属性" />
+                                            </items>
+                                        </ContextMenu>
+                                    </contextMenu>
                                 </TableView>
                             </center>
                             <top>

@@ -5,7 +5,7 @@ import com.kvrmnks.exception.NoFileException;
 import java.io.*;
 
 public class RealDisk {
-    public static final String LOCATION = "d:/";
+    //public static final String LOCATION = "d:/";
 
 
     public static MyFile getFileById(long id) throws NoFileException, IOException, ClassNotFoundException {

@@ -1,5 +1,6 @@
 package com.kvrmnks.net;
 
+import com.kvrmnks.data.Disk;
 import com.kvrmnks.data.RealDisk;
 
 import java.io.FileNotFoundException;
@@ -20,7 +21,7 @@ public class ServerReader extends UnicastRemoteObject implements NetReader {
 
     @Override
     public void setFile(long id, String name) throws FileNotFoundException {
-        randomAccessFile = new RandomAccessFile(RealDisk.LOCATION + "_" + id + "_" + name, "r");
+        randomAccessFile = new RandomAccessFile(Disk.LOCATION + "_" + id + "_" + name, "r");
     }
 
     @Override

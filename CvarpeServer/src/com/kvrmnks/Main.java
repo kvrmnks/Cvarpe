@@ -23,6 +23,22 @@ public class Main extends Application {
     private Stage stage;
     private Scene curScene;
 
+    public Stage getStage() {
+        return stage;
+    }
+
+    public void setStage(Stage stage) {
+        this.stage = stage;
+    }
+
+    public Scene getCurScene() {
+        return curScene;
+    }
+
+    public void setCurScene(Scene curScene) {
+        this.curScene = curScene;
+    }
+
     private Initializable replaceSceneContent(String fxml) throws Exception {
         FXMLLoader loader = new FXMLLoader();
         InputStream in = Main.class.getResourceAsStream(fxml);

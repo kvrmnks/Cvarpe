@@ -13,20 +13,19 @@ public class DataBase {
     public static final String LOCATION = "d:/";
 
     private static HashMap<String, String> userDB;
-
     private static HashMap<Long, String> fileDB;
-
     private static HashMap<String, Long> rootDB;
-
     private static HashMap<String, TransDataList> transData;
+    private static String homePath;
+    private static ArrayList<String> ports;
 
     private static final String USERDB = "__userDB__.db";
     private static final String FILEDB = "__fileDB__.db";
     private static final String ROOTDB = "__rootDB__.db";
     private static final String FILECOUNT = "__fileCount__.db";
     private static final String TRANS_DATA = "__transData__.db";
-
-
+    private static final String FILE_STORE_DATA = "__storeData__.db";
+    private static final String PREFERRED_PORT = "__preferredPort__.db";
     private static long fileCount;
 
     static {
@@ -86,6 +85,29 @@ public class DataBase {
             transData = new HashMap<>();
         }
 
+        file = new File(FILE_STORE_DATA);
+        if (file.exists()) {
+            try {
+                homePath = (String) new ObjectInputStream(new FileInputStream(file)).readObject();
+            } catch (IOException | ClassNotFoundException e) {
+                homePath = "";
+                e.printStackTrace();
+            }
+        } else {
+            homePath = "";
+        }
+        Disk.LOCATION = homePath;
+
+        file = new File(PREFERRED_PORT);
+        if (file.exists()) {
+            try {
+                ports = (ArrayList<String>) new ObjectInputStream(new FileInputStream(file)).readObject();
+            } catch (IOException | ClassNotFoundException e) {
+                e.printStackTrace();
+            }
+        } else {
+            ports = new ArrayList<>();
+        }
     }
 
     synchronized public static long getCount() {
@@ -139,12 +161,38 @@ public class DataBase {
         }
     }
 
+    public static void writeFileStoreDB() {
+        File file = new File(FILE_STORE_DATA);
+        if (file.exists())
+            file.delete();
+        try {
+            new ObjectOutputStream(new FileOutputStream(file)).writeObject(homePath);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void writePreferredPort() {
+        File file = new File(PREFERRED_PORT);
+        if (file.exists()) {
+            file.delete();
+        }
+        try {
+            new ObjectOutputStream(new FileOutputStream(file)).writeObject(ports);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
+
     public static void writeDB() {
         wirteUserDB();
         wirteFileDB();
         writeRootDB();
         writeFileCountDB();
         writeTransDataDB();
+        writeFileStoreDB();
+        writePreferredPort();
     }
 
     public static void addUser(User user) throws UserExistedException, IOException {
@@ -231,8 +279,26 @@ public class DataBase {
     }
 
     public static void setTransDataList(String userName, TransDataList transDataList) throws NoUserException {
-        if(!transData.containsKey(userName))
+        if (!transData.containsKey(userName))
             throw new NoUserException();
-        transData.replace(userName,transDataList);
+        transData.replace(userName, transDataList);
+    }
+
+    public static String getHomePath() {
+        Disk.LOCATION = homePath;
+        return homePath;
+    }
+
+    public static void setHomePath(String homePath) {
+        Disk.LOCATION = homePath;
+        DataBase.homePath = homePath;
+    }
+
+    public static ArrayList<String> getPorts() {
+        return ports;
+    }
+
+    public static void setPorts(ArrayList<String> ports) {
+        DataBase.ports = ports;
     }
 }

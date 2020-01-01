@@ -80,6 +80,7 @@ public class MainController implements Initializable {
     public MenuItem shareUpload;
     public ContextMenu shareContextMenu;
     public ContextMenu logMenu;
+    public TableColumn<SimpleStringProperty, String> logConditionTableColumn;
     private Main application;
     private ObservableList<SimpleMyFileProperty> data = FXCollections.observableArrayList();
     private ObservableList<SimpleMyFileProperty> searchResult = FXCollections.observableArrayList();
@@ -93,6 +94,8 @@ public class MainController implements Initializable {
     private Stack<Long> shareDirectoryStack = new Stack<>();
     private String curShareURL = "";
     private SimpleLogListProperty curLogListProperty;
+    private YRLList yrlList;
+
     private void initFileTab() {
         fileTypeTableColumn.setCellValueFactory(new PropertyValueFactory<>("type"));
         fileNameTableColumn.setCellValueFactory(new PropertyValueFactory<>("name"));
@@ -127,13 +130,10 @@ public class MainController implements Initializable {
                     if (ret) {
                         for (File file : db.getFiles()) {
                             if (file.isFile()) {
-                                try {
-                                    upload(file);
-                                } catch (IOException | FileExistedException | NoUserException | ClassNotFoundException | NotBoundException | NoAccessException | NoFileException | FileStructureException e) {
-                                    e.printStackTrace();
-                                }
+                                upload(file);
                             } else {
                                 try {
+                                    System.out.println("fake");
                                     uploadFileDirectory(file);
                                 } catch (IOException e) {
                                     e.printStackTrace();
@@ -141,10 +141,10 @@ public class MainController implements Initializable {
                             }
                         }
                     }
-                    for (File file : db.getFiles()) {
-                        filePath = file.getAbsolutePath();
-                        //System.out.println(filePath);
-                    }
+                    //  for (File file : db.getFiles()) {
+                    //    filePath = file.getAbsolutePath();
+                    //System.out.println(filePath);
+                    //}
                 }
                 event.setDropCompleted(success);
                 event.consume();
@@ -192,6 +192,8 @@ public class MainController implements Initializable {
         modifyTypeTableColumn.setCellValueFactory(new PropertyValueFactory<>("type"));
         modifyFileSizeTableColumn.setCellValueFactory(new PropertyValueFactory<>("size"));
         logListSpeedTableColumn.setCellValueFactory(new PropertyValueFactory<>("speed"));
+        modifyTimeTableColumn.setCellValueFactory(new PropertyValueFactory<>("time"));
+        logConditionTableColumn.setCellValueFactory(new PropertyValueFactory<>("condition"));
         modifyProcessTableColumn.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<SimpleLogListProperty, ProgressIndicator>, ObservableValue<ProgressIndicator>>() {
             @Override
             public ObservableValue<ProgressIndicator> call(TableColumn.CellDataFeatures<SimpleLogListProperty, ProgressIndicator> param) {
@@ -202,13 +204,28 @@ public class MainController implements Initializable {
             TableRow<SimpleLogListProperty> row = new TableRow<>();
 
             row.setOnMouseClicked(event -> {
-                logMenu.show(logTableView,event.getScreenX(),event.getScreenY());
-                TableRow<SimpleLogListProperty> r = (TableRow<SimpleLogListProperty>)event.getSource();
-                setCurLogListProperty(r.getItem());
+                if(event.getClickCount() == 2){
+                    TableRow<SimpleLogListProperty> r = (TableRow<SimpleLogListProperty>) event.getSource();
+                    SimpleLogListProperty simpleLogListProperty = r.getItem();
+                    if(simpleLogListProperty == null);
+                    else{
+                        if(simpleLogListProperty.currentCondition()){
+                            simpleLogListProperty.start();
+                        }
+                        else{
+                            simpleLogListProperty.stop();
+                        }
+                    }
+                }
+                if (event.getButton() == MouseButton.SECONDARY) {
+                    logMenu.show(logTableView, event.getScreenX(), event.getScreenY());
+                    TableRow<SimpleLogListProperty> r = (TableRow<SimpleLogListProperty>) event.getSource();
+                    setCurLogListProperty(r.getItem());
+                }
             });
             return row;
         });
-        modifyTimeTableColumn.setCellValueFactory(new PropertyValueFactory<>("time"));
+
         logTableView.setItems(logdata);
     }
 
@@ -247,8 +264,13 @@ public class MainController implements Initializable {
         });
     }
 
-    private void initLogList(){
-
+    private void initLogList() {
+        yrlList = YRLList.getByUserName(UserData.getUserName());
+        YRL[] yrls = yrlList.toArray();
+        for (YRL x : yrls) {
+            logdata.add(new SimpleLogListProperty(x));
+        }
+        transferBegin(null);
     }
 
     @Override
@@ -269,7 +291,7 @@ public class MainController implements Initializable {
         this.shareMyFileProperty = myFileProperty;
     }
 
-    private void setCurLogListProperty(SimpleLogListProperty simpleLogListProperty){
+    private void setCurLogListProperty(SimpleLogListProperty simpleLogListProperty) {
         this.curLogListProperty = simpleLogListProperty;
     }
 
@@ -345,15 +367,20 @@ public class MainController implements Initializable {
         directoryChooser.setTitle("选择下载目录");
         File f = directoryChooser.showDialog(application.getStage());
         if (f == null) return;
-        SimpleLogListProperty logListProperty = new SimpleLogListProperty(
-                SimpleLogListProperty.TYPE_DOWNLOAD
+        YRL yrl = new YRL(
+                idDirectoryStack.peek()
+                , currentPath.getValueSafe()
                 , simpleMyFileProperty.getName()
+                , f.getAbsolutePath() + "/" + simpleMyFileProperty.getName()
+                , YRL.TYPE_DOWNLOAD
                 , MyDate.getCurTime()
                 , simpleMyFileProperty.getRsize()
-                , 0
         );
+        SimpleLogListProperty logListProperty = new SimpleLogListProperty(yrl);
         logdata.add(logListProperty);
-        Client.downLoad(idDirectoryStack.peek(), currentPath.getValueSafe(), simpleMyFileProperty.getName(), f.getAbsolutePath() + "/" + simpleMyFileProperty.getName(), logListProperty);
+        yrlList.add(yrl);
+        logListProperty.start();
+        //Client.downLoad(idDirectoryStack.peek(), currentPath.getValueSafe(), simpleMyFileProperty.getName(), f.getAbsolutePath() + "/" + simpleMyFileProperty.getName(), logListProperty);
     }
 
     private void reNameFile(long id, String pos, String name, String newName) throws IOException {
@@ -426,9 +453,7 @@ public class MainController implements Initializable {
                 else
                     flag = deleteFile(idStack.peek(), currentPath.getValueSafe(), simpleMyFileProperty.getName());
                 flush();
-                //if (flag) {
                 Log.log("删除" + currentPath.getValueSafe() + simpleMyFileProperty.getName() + (flag ? "成功" : "失败"));
-                //}
             }
         } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
@@ -457,17 +482,19 @@ public class MainController implements Initializable {
         flush();
     }
 
-    private void upload(File f) throws IOException, NoUserException, NoAccessException, NoFileException, FileStructureException, FileExistedException, NotBoundException, ClassNotFoundException {
-        SimpleLogListProperty logListProperty = new SimpleLogListProperty(
-                SimpleLogListProperty.TYPE_UPLOAD
+    private void upload(File f) {
+        YRL yrl = new YRL(
+                idDirectoryStack.peek()
+                , currentPath.getValueSafe()
                 , f.getName()
+                , f.getAbsolutePath()
+                , YRL.TYPE_UPLOAD
                 , MyDate.getCurTime()
-                , f.length()
-                , 0
-        );
+                , f.length());
+        yrlList.add(yrl);
+        SimpleLogListProperty logListProperty = new SimpleLogListProperty(yrl);
         logdata.add(logListProperty);
-        Client.upload(idStack.peek(), currentPath.getValueSafe(), f.getName(), f.getAbsolutePath(), logListProperty);
-        // Client.upload(UserData.getUserName(), currentPath.getValueSafe(), f, Client.getServerIp(), logListProperty);
+        logListProperty.start();
     }
 
     public void upload(ActionEvent actionEvent) throws IOException, ClassNotFoundException, InterruptedException, NoUserException, NoAccessException, NoFileException, FileStructureException, NotBoundException, FileExistedException {
@@ -543,8 +570,11 @@ public class MainController implements Initializable {
             } else if (result.equals(options.get(3))) {
                 cmd = Client.getTempReadAndWriteURL(simpleMyFileProperty.getId(), idDirectoryStack.peek(), currentPath.getValueSafe());
             }
-            System.out.println(cmd);
+            MyDialog.showInputDialog("链接", "创建链接", "链接", cmd);
+            Log.log("创建链接接成功\n" + cmd);
+            //System.out.println(cmd);
         }
+
     }
 
     public void shareJump(ActionEvent actionEvent) throws IOException, ClassNotFoundException {
@@ -584,16 +614,19 @@ public class MainController implements Initializable {
         directoryChooser.setTitle("选择下载目录");
         File f = directoryChooser.showDialog(application.getStage());
         if (f == null) return;
-        SimpleLogListProperty logListProperty = new SimpleLogListProperty(
-                SimpleLogListProperty.TYPE_DOWNLOAD
+        YRL yrl = new YRL(
+                shareDirectoryStack.peek()
+                , curShareURL
                 , shareMyFileProperty.getName()
+                , f.getAbsolutePath() + "/" + shareMyFileProperty.getName()
+                , YRL.TYPE_DOWNLOAD
                 , MyDate.getCurTime()
                 , shareMyFileProperty.getRsize()
-                , 0
         );
+        SimpleLogListProperty logListProperty = new SimpleLogListProperty(yrl);
+        yrlList.add(yrl);
         logdata.add(logListProperty);
-        Client.downLoad(shareDirectoryStack.peek(), curShareURL, shareMyFileProperty.getName(), f.getAbsolutePath() + "/" + shareMyFileProperty.getName(), logListProperty);
-
+        logListProperty.start();
     }
 
     public void shareUploadFile(ActionEvent actionEvent) throws NoUserException, IOException, NoFileException, FileStructureException, FileExistedException, NotBoundException, ClassNotFoundException, NoAccessException, InterruptedException {
@@ -602,15 +635,19 @@ public class MainController implements Initializable {
         File f = fileChooser.showOpenDialog(application.getStage());
         if (f == null)
             return;
-        SimpleLogListProperty logListProperty = new SimpleLogListProperty(
-                SimpleLogListProperty.TYPE_UPLOAD
+        YRL yrl = new YRL(
+                shareDirectoryStack.peek()
+                , curShareURL
                 , f.getName()
+                , f.getAbsolutePath()
+                , YRL.TYPE_UPLOAD
                 , MyDate.getCurTime()
                 , f.length()
-                , 0
         );
+        yrlList.add(yrl);
+        SimpleLogListProperty logListProperty = new SimpleLogListProperty(yrl);
         logdata.add(logListProperty);
-        Client.upload(shareDirectoryStack.peek(), curShareURL, f.getName(), f.getAbsolutePath(), logListProperty);
+        logListProperty.start();
         Thread.sleep(500);
         shareFlush();
     }
@@ -670,33 +707,41 @@ public class MainController implements Initializable {
     public void transferPause(ActionEvent actionEvent) {
         SimpleLogListProperty[] ret = new SimpleLogListProperty[logdata.size()];
         logdata.toArray(ret);
-        for(SimpleLogListProperty x : ret){
-
+       // logdata.clear();
+        for (SimpleLogListProperty x : ret) {
+            x.stop();
+           // logdata.add(x);
         }
     }
 
     public void transferBegin(ActionEvent actionEvent) {
         SimpleLogListProperty[] ret = new SimpleLogListProperty[logdata.size()];
         logdata.toArray(ret);
-        for(SimpleLogListProperty x : ret){
-
+       // logdata.clear();
+        for (SimpleLogListProperty x : ret) {
+            if (!x.isFinished()) x.start();
+         //   logdata.add(x);
         }
     }
 
 
     public void logPause(ActionEvent actionEvent) {
-        if(curLogListProperty == null) return;
+        if (curLogListProperty == null) return;
+        curLogListProperty.stop();
     }
 
     public void logStart(ActionEvent actionEvent) {
-        if(curLogListProperty == null) return;
+        if (curLogListProperty == null) return;
+        curLogListProperty.start();
     }
 
     public void logDelete(ActionEvent actionEvent) {
-        if(curLogListProperty == null) return;
+        if (curLogListProperty == null) return;
+        logdata.remove(curLogListProperty);
+        yrlList.remove(curLogListProperty.getYrl());
     }
 
     public void logProperty(ActionEvent actionEvent) {
-        if(curLogListProperty == null) return;
+        if (curLogListProperty == null) return;
     }
 }

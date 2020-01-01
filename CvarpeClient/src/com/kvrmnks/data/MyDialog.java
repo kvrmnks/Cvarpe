@@ -41,11 +41,13 @@ public class MyDialog {
         Optional<String> result = frame.showAndWait();
         return result.orElse(null);
     }
-    public static String showInputDialog(String title,String head,String content){
+    public static String showInputDialog(String title,String head,String content,String prompt){
         TextInputDialog dialog = new TextInputDialog("walter");
         dialog.setTitle(title);
         dialog.setHeaderText(head);
         dialog.setContentText(content);
+        dialog.getEditor().setText(prompt);
+        dialog.setWidth(dialog.getEditor().getWidth()+20);
         Optional<String> result = dialog.showAndWait();
         return result.orElse(null);
     }

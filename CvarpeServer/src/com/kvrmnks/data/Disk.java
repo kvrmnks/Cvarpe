@@ -6,7 +6,8 @@ import java.io.*;
 import java.util.Scanner;
 
 public class Disk {
-    public static final String LOCATION = "d:/";
+    public static String LOCATION = "";
+   // public static final String LOCATION = "d:/";
     private static final long TIME_LIMIT = 3600 * 24 * 3;
     private UserDisk userDisk;
     private String userName;
@@ -212,7 +213,7 @@ public class Disk {
         MyFile my = userDisk.createFile(pos, name);
         my.sonFile.get(name).setModifyTime(MyDate.getCurTime());
         DataBase.addFile(my.sonFile.get(name));
-        File file = new File(RealDisk.LOCATION + "_" + my.getId() + "_" + my.getName());
+        File file = new File(Disk.LOCATION + "_" + my.getId() + "_" + my.getName());
         file.createNewFile();
         mainTain();
     }
@@ -225,7 +226,7 @@ public class Disk {
         my.sonFile.get(name).setModifyTime(MyDate.getCurTime());
         DataBase.addFile(my.sonFile.get(name));
         my = my.sonFile.get(name);
-        File file = new File(RealDisk.LOCATION + "_" + my.getId() + "_" + my.getName());
+        File file = new File(Disk.LOCATION + "_" + my.getId() + "_" + my.getName());
         file.createNewFile();
         mainTain();
     }
@@ -263,7 +264,7 @@ public class Disk {
         if (!myFile.sonFile.containsKey(name))
             throw new NoFileException();
         myFile = myFile.sonFile.get(name);
-        File file = new File(RealDisk.LOCATION + "_" + myFile.getId() + "_" + myFile.getName());
+        File file = new File(Disk.LOCATION + "_" + myFile.getId() + "_" + myFile.getName());
         BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(new FileOutputStream(file,true));
         bufferedOutputStream.write(buffer, begin, begin + length);
         bufferedOutputStream.flush();
@@ -281,7 +282,7 @@ public class Disk {
             if (file.sonFile.containsKey(name + ".info")) {
 
                 long infoId = file.sonFile.get(name + ".info").getId();
-                Scanner scan = new Scanner(new File(RealDisk.LOCATION + "_" + infoId + "_" + file.sonFile.get(name + ".info").getName()));
+                Scanner scan = new Scanner(new File(Disk.LOCATION + "_" + infoId + "_" + file.sonFile.get(name + ".info").getName()));
                 long curSize = scan.nextLong();
                 if (size != curSize)
                     throw new FileExistedException();
@@ -295,12 +296,12 @@ public class Disk {
             createFile(pos, name);
             createFile(pos, name + ".info");
             long infoId = file.sonFile.get(name + ".info").getId();
-            PrintWriter pw = new PrintWriter(new BufferedOutputStream(new FileOutputStream(new File(RealDisk.LOCATION + "_" + infoId + "_" + file.sonFile.get(name + ".info").getName()))));
+            PrintWriter pw = new PrintWriter(new BufferedOutputStream(new FileOutputStream(new File(Disk.LOCATION + "_" + infoId + "_" + file.sonFile.get(name + ".info").getName()))));
             pw.println(size);
             pw.println(Md5);
         }
         long realId = file.sonFile.get(name).getId();
-        BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(new FileOutputStream(new File(RealDisk.LOCATION + "_" + realId + "_" + file.sonFile.get(name).getName())));
+        BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(new FileOutputStream(new File(Disk.LOCATION + "_" + realId + "_" + file.sonFile.get(name).getName())));
         bufferedOutputStream.write(buffer, begin, length);
         bufferedOutputStream.close();
     }
@@ -312,11 +313,11 @@ public class Disk {
         if (!myFile.sonFile.containsKey(name))
             throw new NoFileException();
         myFile = myFile.sonFile.get(name);
-        File file = new File(RealDisk.LOCATION + "_" + myFile.getId() + "_" + myFile.getName());
+        File file = new File(Disk.LOCATION + "_" + myFile.getId() + "_" + myFile.getName());
         Scanner scan = new Scanner(file);
         InfoFile infoFile = new InfoFile();
-        if (scan.hasNext()) {
-            infoFile.setMd5(scan.next());
+        if (scan.hasNextLine()) {
+            infoFile.setModifyTime(scan.nextLine());
         } else {
             throw new FileStructureException();
         }
@@ -336,13 +337,13 @@ public class Disk {
         if (!myFile.sonFile.containsKey(name))
             throw new NoFileException();
         myFile = myFile.sonFile.get(name);
-        File file = new File(RealDisk.LOCATION + "_" + myFile.getId() + "_" + myFile.getName());
+        File file = new File(Disk.LOCATION + "_" + myFile.getId() + "_" + myFile.getName());
         if (file.exists()) {
             file.delete();
             file.createNewFile();
         }
         PrintWriter pw = new PrintWriter(new FileOutputStream(file));
-        pw.println(infoFile.getMd5());
+        pw.println(infoFile.getModifyTime());
         pw.println(infoFile.getSize());
         pw.flush();
         pw.close();
@@ -355,7 +356,7 @@ public class Disk {
         if (!myFile.sonFile.containsKey(name))
             throw new NoFileException();
         myFile = myFile.sonFile.get(name);
-        PrintWriter out = new PrintWriter(new FileOutputStream(new File(RealDisk.LOCATION + "_" + myFile.getId() + "_" + myFile.getName())));
+        PrintWriter out = new PrintWriter(new FileOutputStream(new File(Disk.LOCATION + "_" + myFile.getId() + "_" + myFile.getName())));
         out.println(content);
         out.flush();
         out.close();

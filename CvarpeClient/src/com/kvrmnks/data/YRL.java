@@ -1,18 +1,49 @@
 package com.kvrmnks.data;
 
-public class YRL {
+import java.io.Serializable;
+
+public class YRL implements Serializable {
     private long id;
     private String pos,name,realPos;
     private int type;
-    public static final int TYPE_FILE = 1;
-    public static final int TYPE_DIRECTORY = 2;
+    private String time;
+    private long size;
+    private boolean isFinished = false;
+    public static final int TYPE_UPLOAD = 1;
+    public static final int TYPE_DOWNLOAD = 2;
 
-    public YRL(long id,String pos,String name,String realPos,int type){
+    public YRL(long id,String pos,String name,String realPos,int type,String time,long size){
         this.id = id;
         this.pos = pos;
         this.name = name;
         this.realPos = realPos;
         this.type = type;
+        this.time = time;
+        this.size = size;
+    }
+
+    public boolean isFinished() {
+        return isFinished;
+    }
+
+    public void setFinished(boolean finished) {
+        isFinished = finished;
+    }
+
+    public long getSize() {
+        return size;
+    }
+
+    public void setSize(long size) {
+        this.size = size;
+    }
+
+    public String getTime() {
+        return time;
+    }
+
+    public void setTime(String time) {
+        this.time = time;
     }
 
     public long getId() {

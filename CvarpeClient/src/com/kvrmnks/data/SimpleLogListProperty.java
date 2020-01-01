@@ -1,6 +1,7 @@
 package com.kvrmnks.data;
 
 import com.kvrmnks.net.DownLoader;
+import com.kvrmnks.net.TransLoader;
 import com.kvrmnks.net.Uploader;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleLongProperty;
@@ -9,34 +10,86 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.control.ProgressIndicator;
 import javafx.scene.layout.HBox;
+import sun.java2d.pipe.SpanShapeRenderer;
 
 public class SimpleLogListProperty {
 
-    private final SimpleStringProperty type, name, time,speed;
+    private final SimpleStringProperty type, name, time,speed,condition;
     private final SimpleStringProperty size;
     private final SimpleDoubleProperty process;
     private final ProgressIndicator progressBar;
-    private final HBox hbox;
-    private final Label label;
-    private Uploader uploader;
-    private DownLoader downLoader;
+    private TransLoader transLoader;
     public static final int TYPE_DOWNLOAD = 1;
     public static final int TYPE_UPLOAD = 2;
-    private void build() {
-        this.label.textProperty().unbind();
-        this.label.textProperty().bind(this.process.multiply(100).asString().concat("%"));
-        this.progressBar.progressProperty().unbind();
-        this.progressBar.progressProperty().bind(this.process);
-        this.hbox.getChildren().addAll(this.progressBar, this.label);
+    private YRL yrl;
+
+    public boolean isFinished(){
+        return yrl.isFinished();
     }
 
-    public SimpleLogListProperty(int type, String name, String time, long size, double process) {
+    public void setFinished(boolean flag){
+        yrl.setFinished(flag);
+    }
+
+    public boolean currentCondition(){
+        return transLoader.currentCondition();
+    }
+    public void reset(){
+        transLoader.reset();
+    }
+
+    public void stop(){
+        transLoader.stop();
+        condition.setValue("暂停");
+    }
+
+    public void start(){
+        transLoader.reset();
+        condition.setValue("进行中");
+        new Thread(transLoader).start();
+    }
+
+    private void build() {
+        this.progressBar.progressProperty().unbind();
+        this.progressBar.progressProperty().bind(this.process);
+    }
+
+    public SimpleLogListProperty(YRL yrl){
+        this.yrl = yrl;
         this.type = new SimpleStringProperty();
         this.name = new SimpleStringProperty();
         this.time = new SimpleStringProperty();
         this.size = new SimpleStringProperty();
         this.speed = new SimpleStringProperty();
         this.process = new SimpleDoubleProperty();
+        this.progressBar = new ProgressIndicator(0);
+        this.condition = new SimpleStringProperty();
+        if(yrl.getType() == YRL.TYPE_DOWNLOAD)
+            this.type.setValue("下载");
+        else
+            this.type.setValue("上传");
+        this.name.setValue(yrl.getName());
+        this.time.setValue(yrl.getTime());
+        this.size.setValue(MyFile.transferSize(yrl.getSize()));
+        if(yrl.getType() == YRL.TYPE_DOWNLOAD){
+            transLoader = new DownLoader(yrl.getId(),yrl.getPos(),yrl.getName(),yrl.getRealPos(),this);
+        }else{
+            transLoader = new Uploader(yrl.getId(),yrl.getPos(),yrl.getName(),yrl.getRealPos(),this);
+        }
+        transLoader.stop();
+        build();
+        if(yrl.isFinished()){condition.setValue("完成");this.setProcess(1);}
+        else{;}
+    }
+    @Deprecated
+    public SimpleLogListProperty(int type, String name, String time, long size, double process,TransLoader transLoader) {
+        this.type = new SimpleStringProperty();
+        this.name = new SimpleStringProperty();
+        this.time = new SimpleStringProperty();
+        this.size = new SimpleStringProperty();
+        this.speed = new SimpleStringProperty();
+        this.process = new SimpleDoubleProperty();
+        this.condition = new SimpleStringProperty("进行中");
         if (type == TYPE_DOWNLOAD) {
             this.type.setValue("下载");
         } else {
@@ -47,29 +100,40 @@ public class SimpleLogListProperty {
         this.process.setValue(process);
         this.time.setValue(time);
         this.progressBar = new ProgressIndicator(process);
-        this.hbox = new HBox();
-        this.label = new Label();
-
+        this.transLoader = transLoader;
         build();
     }
 
-    public Uploader getUploader() {
-        return uploader;
+    public String getCondition() {
+        return condition.get();
     }
 
-
-    public void setDownLoader(DownLoader downLoader){}
-
-    public void setUploader(Uploader uploader) {
-        this.uploader = uploader;
+    public SimpleStringProperty conditionProperty() {
+        return condition;
     }
 
-    public HBox getHBox() {
-        return hbox;
+    public void setCondition(String condition) {
+        this.condition.set(condition);
     }
 
-    public Label getLabel() {
-        return label;
+    public void setSize(String size) {
+        this.size.set(size);
+    }
+
+    public YRL getYrl() {
+        return yrl;
+    }
+
+    public void setYrl(YRL yrl) {
+        this.yrl = yrl;
+    }
+
+    public TransLoader getTransLoader() {
+        return transLoader;
+    }
+
+    public void setTransLoader(TransLoader transLoader) {
+        this.transLoader = transLoader;
     }
 
     public ProgressIndicator getProgressBar() {

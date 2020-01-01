@@ -20,7 +20,7 @@ public class Uploader extends TransLoader implements Runnable, Serializable {
     private File realFile;
     private NetWriter serverWriter;
 
-    public Uploader(long id, String pos, String name, String realPos, SimpleLogListProperty simpleLogListProperty) throws IOException, NotBoundException, NoAccessException, NoUserException, NoFileException, FileExistedException, ClassNotFoundException, FileStructureException {
+    public Uploader(long id, String pos, String name, String realPos, SimpleLogListProperty simpleLogListProperty) {
         this.id = id;
         this.pos = pos;
         this.name = name;
@@ -35,21 +35,27 @@ public class Uploader extends TransLoader implements Runnable, Serializable {
         serverWriter = (NetWriter) Naming.lookup(UserData.getWriterIp());
         MyFile myFile = server.getStructure(id, pos);
         if (!myFile.sonFile.containsKey(name)) {
-            server.createFile(id, pos, name, realFile.length());
+            server.createFile(id, pos, name, realFile.length(),realFile.lastModified());
         } else {
-            if (myFile.sonFile.get(name).getSize() != realFile.length())
+           // Log.log(myFile.sonFile.get(name).getModifyTime());
+            //Log.log(MyDate.convert(""+new File(realPos).lastModified()));
+            if (myFile.sonFile.get(name).getSize() != realFile.length()
+                    || (!myFile.sonFile.get(name).getModifyTime().equals(MyDate.convert(""+realFile.lastModified()))))
                 throw new FileExistedException();
         }
         myFile = server.getStructure(id,pos);
         if (!myFile.sonFile.containsKey(name + ".info")) {
             server.createFile(id, pos, name + ".info");
             infoFile = new InfoFile();
-            infoFile.setMd5(MD5.getMD5OfFile(realPos));
+            infoFile.setModifyTime(MyDate.convert(""+new File(realPos).lastModified()));
             infoFile.setSize(0);
             server.writeInfoFile(id, pos, name+".info", infoFile);
         } else {
             infoFile = server.getInfoFile(id, pos, name + ".info");
-            if (!infoFile.getMd5().equals(MD5.getMD5OfFile(realPos)))
+         //   Log.log(infoFile.getModifyTime());
+         //   Log.log(MyDate.convert(""+new File(realPos).lastModified()));
+            if (myFile.sonFile.get(name).getSize() != new File(realPos).length()
+                    || (!infoFile.getModifyTime().equals(MyDate.convert(""+new File(realPos).lastModified()))))
                 throw new FileExistedException();
             curSize = infoFile.getSize();
         }
@@ -102,11 +108,14 @@ public class Uploader extends TransLoader implements Runnable, Serializable {
                 preData = curSize;
             }
         }
+        server.writeInfoFile(id, pos, name+".info", infoFile);
         if(!flag){
             server.deleteFile(id, pos, name + ".info");
             simpleLogListProperty.setProcess(1);
+            simpleLogListProperty.setFinished(true);
+            simpleLogListProperty.setCondition("完成");
         }
-
+        infoFile.setSize(curSize);
         randomAccessFile.close();
         serverWriter.close();
     }
