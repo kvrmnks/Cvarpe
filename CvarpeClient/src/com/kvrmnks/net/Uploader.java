@@ -3,6 +3,7 @@ package com.kvrmnks.net;
 
 import com.kvrmnks.data.*;
 import com.kvrmnks.exception.*;
+import javafx.application.Platform;
 
 import java.io.*;
 import java.net.MalformedURLException;
@@ -19,7 +20,7 @@ public class Uploader extends TransLoader implements Runnable, Serializable {
     private InfoFile infoFile;
     private File realFile;
     private NetWriter serverWriter;
-
+    private long heart_id;
     public Uploader(long id, String pos, String name, String realPos, SimpleLogListProperty simpleLogListProperty) {
         this.id = id;
         this.pos = pos;
@@ -29,11 +30,12 @@ public class Uploader extends TransLoader implements Runnable, Serializable {
 
     }
 
-    private void init() throws IOException, NotBoundException, ClassNotFoundException, NoUserException, NoAccessException, NoFileException, FileExistedException, FileStructureException {
+   synchronized public void init() throws IOException, NotBoundException, ClassNotFoundException, NoUserException, NoAccessException, NoFileException, FileExistedException, FileStructureException, NoSuchUserException {
         realFile = new File(realPos);
-        server = (Net) Naming.lookup(UserData.getServerIp());
-        serverWriter = (NetWriter) Naming.lookup(UserData.getWriterIp());
+        server = UserData.server;
+        serverWriter = UserData.serverWriter;
         MyFile myFile = server.getStructure(id, pos);
+        boolean hasFile = false;
         if (!myFile.sonFile.containsKey(name)) {
             server.createFile(id, pos, name, realFile.length(),realFile.lastModified());
         } else {
@@ -42,31 +44,40 @@ public class Uploader extends TransLoader implements Runnable, Serializable {
             if (myFile.sonFile.get(name).getSize() != realFile.length()
                     || (!myFile.sonFile.get(name).getModifyTime().equals(MyDate.convert(""+realFile.lastModified()))))
                 throw new FileExistedException();
+            hasFile = true;
         }
         myFile = server.getStructure(id,pos);
-        if (!myFile.sonFile.containsKey(name + ".info")) {
+        if ((!myFile.sonFile.containsKey(name + ".info")) && (hasFile == false)) {
             server.createFile(id, pos, name + ".info");
             infoFile = new InfoFile();
             infoFile.setModifyTime(MyDate.convert(""+new File(realPos).lastModified()));
             infoFile.setSize(0);
             server.writeInfoFile(id, pos, name+".info", infoFile);
+        } else if(!myFile.sonFile.containsKey(name + ".info")){
+            simpleLogListProperty.setProcess(1);
+            simpleLogListProperty.setFinished(true);
+            simpleLogListProperty.setCondition("完成");
+            throw new FileExistedException();
         } else {
             infoFile = server.getInfoFile(id, pos, name + ".info");
-         //   Log.log(infoFile.getModifyTime());
-         //   Log.log(MyDate.convert(""+new File(realPos).lastModified()));
+            //   Log.log(infoFile.getModifyTime());
+            //   Log.log(MyDate.convert(""+new File(realPos).lastModified()));
             if (myFile.sonFile.get(name).getSize() != new File(realPos).length()
                     || (!infoFile.getModifyTime().equals(MyDate.convert(""+new File(realPos).lastModified()))))
                 throw new FileExistedException();
             curSize = infoFile.getSize();
         }
         myFile = server.getStructure(id,pos).sonFile.get(name);
+      //  Log.log(name+" "+serverWriter.toString());
+
+        heart_id = myFile.getId();
         serverWriter.setFile(myFile.getId(),myFile.getName());
         simpleLogListProperty.setProcess((double) curSize / realFile.length());
         wholeSize = realFile.length();
     }
 
     @Deprecated
-    void work() throws ClassNotFoundException, NoUserException, NoAccessException, NoFileException, IOException {
+    void work() throws ClassNotFoundException, NoUserException, NoAccessException, NoFileException, IOException, NoSuchUserException {
         BufferedInputStream bufferedInputStream = new BufferedInputStream(new FileInputStream(realFile));
         byte[] buffer = new byte[PACKAGE_SIZE];
         MyFile myFile = server.getStructure(id, pos);
@@ -88,7 +99,7 @@ public class Uploader extends TransLoader implements Runnable, Serializable {
         server.deleteFile(id, pos, name + ".info");
     }
 
-    void transfer() throws IOException, ClassNotFoundException, NoUserException, NoAccessException, NoFileException {
+    synchronized void transfer() throws IOException, ClassNotFoundException, NoUserException, NoAccessException, NoFileException, NoSuchUserException {
         RandomAccessFile randomAccessFile = new RandomAccessFile(realFile.getAbsoluteFile(),"r");
         randomAccessFile.seek(curSize);
         byte[] buffer = new byte[PACKAGE_SIZE];
@@ -96,7 +107,8 @@ public class Uploader extends TransLoader implements Runnable, Serializable {
         while(curSize < wholeSize && (!flag)){
             int tmp = randomAccessFile.read(buffer,0,PACKAGE_SIZE);
             curSize += tmp;
-            serverWriter.write(buffer,0,tmp);
+           // Log.log(name+"    %%%% "+realPos);
+            serverWriter.write(heart_id,buffer,0,tmp);
             if((double)curSize/wholeSize > 0.01 + simpleLogListProperty.getProcess()){
                 simpleLogListProperty.setProcess((double)curSize/wholeSize);
             }
@@ -108,6 +120,7 @@ public class Uploader extends TransLoader implements Runnable, Serializable {
                 preData = curSize;
             }
         }
+        infoFile.setSize(curSize);
         server.writeInfoFile(id, pos, name+".info", infoFile);
         if(!flag){
             server.deleteFile(id, pos, name + ".info");
@@ -117,7 +130,7 @@ public class Uploader extends TransLoader implements Runnable, Serializable {
         }
         infoFile.setSize(curSize);
         randomAccessFile.close();
-        serverWriter.close();
+        serverWriter.close(heart_id);
     }
 
     @Override
@@ -125,7 +138,16 @@ public class Uploader extends TransLoader implements Runnable, Serializable {
         try {
             init();
             transfer();
-        } catch (IOException | ClassNotFoundException | NoUserException | NoAccessException | NoFileException | FileStructureException | NotBoundException | FileExistedException e) {
+            Platform.runLater(
+                    ()->{
+                        try {
+                            this.mainController.flush();
+                            this.mainController.shareFlush();
+                        } catch (IOException | ClassNotFoundException e) {
+                            e.printStackTrace();
+                        }
+                    });
+        } catch (IOException | ClassNotFoundException | NoUserException | NoAccessException | NoFileException | FileStructureException | NotBoundException | FileExistedException | NoSuchUserException e) {
             e.printStackTrace();
         }
     }

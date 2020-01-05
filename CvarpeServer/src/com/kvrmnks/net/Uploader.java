@@ -3,10 +3,8 @@ package com.kvrmnks.net;
 import com.kvrmnks.data.Disk;
 import com.kvrmnks.data.MyFile;
 import com.kvrmnks.data.RealDisk;
-import com.kvrmnks.exception.FileExistedException;
-import com.kvrmnks.exception.NoAccessException;
-import com.kvrmnks.exception.NoFileException;
-import com.kvrmnks.exception.NoUserException;
+import com.kvrmnks.exception.*;
+
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -154,7 +152,7 @@ public class Uploader implements Runnable {
                 disk = Disk.constructByUserName(disk.getUserName());
                 disk.getStructure(pos).sonFile.get(name).setSize(currentLength);
                 disk.mainTain();
-            } catch (ClassNotFoundException | NoUserException | IOException | NoFileException | NoAccessException e) {
+            } catch (IOException | NoFileException | NoAccessException | NoSuchUserException e) {
                 e.printStackTrace();
             }
         }

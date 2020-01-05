@@ -24,14 +24,14 @@ public class MyDialog {
         TextInputDialog dialog = new TextInputDialog();
         dialog.setContentText(content);
         Optional<String> ret = dialog.showAndWait();
-        return ret.get();
+        return ret.orElse(null);
     }
 
     public static boolean showCheckAlert(String content) {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setContentText(content);
         Optional<ButtonType> ret = alert.showAndWait();
-        return ret.get() == ButtonType.OK;
+        return ret.filter(buttonType -> buttonType == ButtonType.OK).isPresent();
     }
     public static String showChioceDialog(ArrayList<String> options,String title,String head,String content){
         ChoiceDialog<String> frame = new ChoiceDialog<>("临时可读链接", options);

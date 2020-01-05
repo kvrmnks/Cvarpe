@@ -17,7 +17,7 @@ public class UserManager implements Serializable {
     }
 
     public static void addUser(String userName, String password) throws UserExistedException, IOException {
-        DataBase.addUser(new User(userName, password));
+        DataBase.addUser(new User(userName, password,MyDate.getRealTimeStamp()));
     }
 
     public static void modifyPassword(String userName, String newPassword) throws NoUserException {

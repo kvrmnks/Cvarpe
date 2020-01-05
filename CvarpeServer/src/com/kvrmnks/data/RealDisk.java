@@ -13,6 +13,7 @@ public class RealDisk {
         return (MyFile) new ObjectInputStream(new FileInputStream(new File(command))).readObject();
     }
 
+    @Deprecated
     synchronized public static void writeMyFile(MyFile myFile, long id, String fileName) throws IOException {
         fileName = "_" + id + "_" + fileName;
         File file = new File(fileName);

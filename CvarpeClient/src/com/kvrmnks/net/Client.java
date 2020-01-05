@@ -33,14 +33,14 @@ public class Client {
     }
 
     @Deprecated
-    public static MyFile getStructure(String location) throws ClassNotFoundException, NoUserException, NoAccessException, NoFileException, IOException {
+    public static MyFile getStructure(String location) throws ClassNotFoundException, NoUserException, NoAccessException, NoFileException, IOException, NoSuchUserException {
         MyFile myFile = server.getStructure(location);
         myFile.mainTain();
         myFile.buildPath();
         return myFile;
     }
 
-    public static MyFile getStructure(long id, String pos) throws ClassNotFoundException, NoUserException, NoAccessException, NoFileException, IOException {
+    public static MyFile getStructure(long id, String pos) throws ClassNotFoundException, NoUserException, NoAccessException, NoFileException, IOException, NoSuchUserException {
         MyFile myFile = server.getStructure(id, pos);
         myFile.mainTain();
         myFile.buildPath();
@@ -80,42 +80,42 @@ public class Client {
         }
     */
     @Deprecated
-    public static void deleteFile(String pos, String name) throws ClassNotFoundException, NoUserException, NoAccessException, NoFileException, IOException {
+    public static void deleteFile(String pos, String name) throws ClassNotFoundException, NoUserException, NoAccessException, NoFileException, IOException, NoSuchUserException {
         server.deleteFile(pos, name);
     }
 
-    public static void deleteFile(long id, String pos, String name) throws ClassNotFoundException, NoUserException, NoAccessException, NoFileException, IOException {
+    public static void deleteFile(long id, String pos, String name) throws ClassNotFoundException, NoUserException, NoAccessException, NoFileException, IOException, NoSuchUserException {
         server.deleteFile(id, pos, name);
     }
 
     @Deprecated
-    public static void deleteFileDirectory(String pos, String name) throws ClassNotFoundException, NoUserException, NoAccessException, NoFileException, IOException {
+    public static void deleteFileDirectory(String pos, String name) throws ClassNotFoundException, NoUserException, NoAccessException, NoFileException, IOException, NoSuchUserException {
         server.deleteFileDirectory(pos, name);
     }
 
-    public static void deleteFileDirectory(long id, String pos, String name) throws ClassNotFoundException, NoUserException, NoAccessException, NoFileException, IOException {
+    public static void deleteFileDirectory(long id, String pos, String name) throws ClassNotFoundException, NoUserException, NoAccessException, NoFileException, IOException, NoSuchUserException {
         server.deleteFileDirectory(id, pos, name);
     }
 
     @Deprecated
-    public static void createFileDirectory(String fileDirectory, String fileName) throws IOException, ClassNotFoundException, NoUserException, NoAccessException, NoFileException, FileExistedException {
+    public static void createFileDirectory(String fileDirectory, String fileName) throws IOException, ClassNotFoundException, NoUserException, NoAccessException, NoFileException, FileExistedException, NoSuchUserException {
         server.createDirectory(fileDirectory, fileName);
     }
 
-    public static void createFileDirectory(long id, String fileDirectory, String fileName) throws IOException, ClassNotFoundException, NoUserException, NoAccessException, NoFileException, FileExistedException {
+    public static void createFileDirectory(long id, String fileDirectory, String fileName) throws IOException, ClassNotFoundException, NoUserException, NoAccessException, NoFileException, FileExistedException, NoSuchUserException {
         server.createDirectory(id, fileDirectory, fileName);
     }
 
-    public static MyFile[] searchFile(String fileName) throws IOException, ClassNotFoundException, NoFileException, NoAccessException, NoUserException {
+    public static MyFile[] searchFile(String fileName) throws IOException, ClassNotFoundException, NoFileException, NoAccessException, NoUserException, NoSuchUserException {
         MyFile full = getStructure("Editor^0^/" + UserData.getUserName() + "/");
         return full.search(fileName);
     }
 
-    public static boolean logUp(String name, String password) throws IOException, UserExistedException {
+    public static boolean logUp(String name, String password) throws IOException, UserExistedException, ClassNotFoundException, NoFileException, NoUserException, NoSuchUserException {
         return server.logUp(name, MD5.getMD5(password));
     }
 
-    public static boolean logIn(String name, String password) throws IOException {
+    public static boolean logIn(String name, String password) throws IOException, NoSuchUserException {
         return server.logIn(name, MD5.getMD5(password));
     }
 
@@ -136,20 +136,20 @@ public class Client {
     }
 
     @Deprecated
-    public static void reNameFileDirectory(String pos, String name, String newName) throws IOException, ClassNotFoundException, NoUserException, NoAccessException, NoFileException, FileExistedException {
+    public static void reNameFileDirectory(String pos, String name, String newName) throws IOException, ClassNotFoundException, NoUserException, NoAccessException, NoFileException, FileExistedException, NoSuchUserException {
         server.renameFileDirectory(pos, name, newName);
     }
 
-    public static void reNameFileDirectory(long id, String pos, String name, String newName) throws IOException, ClassNotFoundException, NoUserException, NoAccessException, NoFileException, FileExistedException {
+    public static void reNameFileDirectory(long id, String pos, String name, String newName) throws IOException, ClassNotFoundException, NoUserException, NoAccessException, NoFileException, FileExistedException, NoSuchUserException {
         server.renameFileDirectory(id, pos, name, newName);
     }
 
     @Deprecated
-    public static void reNameFile(String pos, String name, String newName) throws IOException, ClassNotFoundException, NoUserException, NoAccessException, NoFileException, FileExistedException {
+    public static void reNameFile(String pos, String name, String newName) throws IOException, ClassNotFoundException, NoUserException, NoAccessException, NoFileException, FileExistedException, NoSuchUserException {
         server.renameFile(pos, name, newName);
     }
 
-    public static void reNameFile(long id, String pos, String name, String newName) throws IOException, ClassNotFoundException, NoUserException, NoAccessException, NoFileException, FileExistedException {
+    public static void reNameFile(long id, String pos, String name, String newName) throws IOException, ClassNotFoundException, NoUserException, NoAccessException, NoFileException, FileExistedException, NoSuchUserException {
         server.renameFile(id, pos, name, newName);
     }
 
@@ -167,5 +167,25 @@ public class Client {
 
     public static String getTempReadOnlyURL(long id, long fatherId,String pos) throws RemoteException {
         return server.getTempReadOnlyURL(id,fatherId, pos);
+    }
+
+    public static String[] getShareList() throws RemoteException {
+        return server.getShareListByName(UserData.getUserName());
+    }
+
+    public static void addShareList(String content) throws RemoteException {
+        server.addShareList(UserData.getUserName(),content);
+    }
+
+    public static void deleteShareList(String content) throws RemoteException {
+        server.deleteShareList(UserData.getUserName(),content);
+    }
+
+    public static long getCapacity(long id,String pos) throws ClassNotFoundException, NoUserException, NoFileException, NoSuchUserException, IOException {
+        return server.getCapacity(id,pos);
+    }
+
+    public static long getUsedCapacity(long id,String pos) throws ClassNotFoundException, NoUserException, NoFileException, NoSuchUserException, IOException {
+        return server.getUsedCapacity(id,pos);
     }
 }

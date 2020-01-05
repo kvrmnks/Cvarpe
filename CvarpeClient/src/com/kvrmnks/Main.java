@@ -12,6 +12,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.fxml.JavaFXBuilderFactory;
 import javafx.scene.Scene;
+import javafx.scene.image.Image;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
@@ -37,6 +38,7 @@ public class Main extends Application {
     public void start(Stage primaryStage) throws Exception {
         stage = primaryStage;
         stage.setTitle("Cvarpe");
+        primaryStage.getIcons().add(new Image("/logo.png"));
         setConnectForm();
         stage.show();
         stage.setOnCloseRequest(new EventHandler<WindowEvent>() {

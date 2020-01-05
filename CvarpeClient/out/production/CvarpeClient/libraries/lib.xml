@@ -1,0 +1,18 @@
+<component name="libraryTable">
+  <library name="lib">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/out/artifacts/CvarpeClient/bundles/CvarpeClient/runtime/lib/jfxswt.jar!/" />
+      <root url="jar://$PROJECT_DIR$/out/artifacts/CvarpeClient/bundles/CvarpeClient/runtime/lib/management-agent.jar!/" />
+      <root url="jar://$PROJECT_DIR$/out/artifacts/CvarpeClient/bundles/CvarpeClient/runtime/lib/charsets.jar!/" />
+      <root url="jar://$PROJECT_DIR$/out/artifacts/CvarpeClient/bundles/CvarpeClient/runtime/lib/jsse.jar!/" />
+      <root url="jar://$PROJECT_DIR$/out/artifacts/CvarpeClient/bundles/CvarpeClient/runtime/lib/plugin.jar!/" />
+      <root url="jar://$PROJECT_DIR$/out/artifacts/CvarpeClient/bundles/CvarpeClient/runtime/lib/rt.jar!/" />
+      <root url="jar://$PROJECT_DIR$/out/artifacts/CvarpeClient/bundles/CvarpeClient/runtime/lib/jfr.jar!/" />
+      <root url="jar://$PROJECT_DIR$/out/artifacts/CvarpeClient/bundles/CvarpeClient/runtime/lib/jce.jar!/" />
+      <root url="jar://$PROJECT_DIR$/out/artifacts/CvarpeClient/bundles/CvarpeClient/runtime/lib/javaws.jar!/" />
+      <root url="jar://$PROJECT_DIR$/out/artifacts/CvarpeClient/bundles/CvarpeClient/runtime/lib/resources.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

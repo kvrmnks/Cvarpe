@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="PanItClient3">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/out/artifacts/PanItClient/bundles/PanItClient.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

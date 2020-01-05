@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="PanItClient2">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/out/artifacts/CvarpeClient/bundles/PanItClient.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

@@ -6,6 +6,8 @@ import com.kvrmnks.data.UserData;
 import com.kvrmnks.exception.Log;
 import com.kvrmnks.net.Client;
 import com.kvrmnks.net.Net;
+import com.kvrmnks.net.NetReader;
+import com.kvrmnks.net.NetWriter;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.Initializable;
@@ -19,6 +21,7 @@ import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
+import java.util.Vector;
 
 public class ConnectController implements Initializable {
     public Button connectButton, closeButton;
@@ -30,8 +33,8 @@ public class ConnectController implements Initializable {
     }
 
     public void initialize(URL location, ResourceBundle resources) {
-        ArrayList<String> ip = UserData.getPreferredIp();
-        ArrayList<String> port = UserData.getPreferredPort();
+        Vector<String> ip = UserData.getPreferredIp();
+        Vector<String> port = UserData.getPreferredPort();
         for (String x : ip)
             ipTextField.getItems().add(x);
         for (String x : port)
@@ -49,6 +52,9 @@ public class ConnectController implements Initializable {
             UserData.setServerIp("rmi://" + ip + ":" + port + "/" + "Server");
             UserData.setReaderIp("rmi://" + ip + ":" + port + "/" + "ServerReader");
             UserData.setWriterIp("rmi://" + ip + ":" + port + "/" + "ServerWriter");
+            UserData.serverReader = (NetReader) Naming.lookup(UserData.getReaderIp());
+            UserData.serverWriter = (NetWriter) Naming.lookup(UserData.getWriterIp());
+            UserData.server = tmp;
             Client.setServerIp(ip);
             Client.setPort(port);
             Client.setNet(tmp);

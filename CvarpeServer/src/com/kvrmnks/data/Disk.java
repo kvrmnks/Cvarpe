@@ -1,5 +1,6 @@
 package com.kvrmnks.data;
 
+import com.kvrmnks.UI.MainController;
 import com.kvrmnks.exception.*;
 
 import java.io.*;
@@ -15,10 +16,11 @@ public class Disk {
     private Disk() {
     }
 
-    synchronized public static Disk constructByUserName(String userName) throws ClassNotFoundException, NoUserException, NoFileException, IOException {
+    synchronized public static Disk constructByUserName(String userName) throws NoSuchUserException {
         Disk ret = new Disk();
         ret.userName = userName;
-        ret.userDisk = UserDisk.getUserDiskByName(userName);
+        ret.userDisk = DataBase.getUserDiskByName(userName);
+        //DataBase.replaceMyFile();
         return ret;
     }
 
@@ -31,20 +33,12 @@ public class Disk {
     synchronized private boolean canRead(String type, String time) {
         if (type.equals("Editor") || type.equals("Viewer")) {
             return true;
-        } else if (MyDate.getNowTimeStamp() - Long.parseLong(time) <= TIME_LIMIT) {
-            return true;
-        } else {
-            return false;
-        }
+        } else return MyDate.getNowTimeStamp() - Long.parseLong(time) <= TIME_LIMIT;
     }
 
     synchronized private boolean canWrite(String type, String time) {
-        if (type.equals("Editor")
-                || (type.equals("PreEditor") && MyDate.getNowTimeStamp() - Long.parseLong(time) <= TIME_LIMIT)) {
-            return true;
-        } else {
-            return false;
-        }
+        return type.equals("Editor")
+                || (type.equals("PreEditor") && MyDate.getNowTimeStamp() - Long.parseLong(time) <= TIME_LIMIT);
     }
 
     synchronized private boolean canRead(String pos) {
@@ -63,8 +57,8 @@ public class Disk {
     }
 
     synchronized public void mainTain() throws IOException {
-        MyFile file = userDisk.getRoot();
-        RealDisk.writeMyFile(file, file.getId(), file.getName() + ".db");
+        //MyFile file = userDisk.getRoot();
+        //RealDisk.writeMyFile(file, file.getId(), file.getName() + ".db");
     }
 
     synchronized public long getFileId(String pos, String name) throws NoFileException, NoAccessException {
@@ -81,6 +75,7 @@ public class Disk {
         return userDisk.getFileDirectoryId(pos, name);
     }
 
+    @Deprecated
     synchronized public void createFileDirectory(String pos, String name) throws NoFileException, IOException, FileExistedException, NoAccessException {
         if (!canWrite(pos))
             throw new NoAccessException();
@@ -97,6 +92,7 @@ public class Disk {
             throw new NoAccessException();
         //pos = getRealPos(pos);
         MyFile mf = userDisk.createFileDirectory(id, name);
+        DataBase.replaceMyFile(mf.getId(),mf);
         //mf = mf.sonDirectory.get(name);
         mf = mf.sonDirectory.get(name);
         mf.setModifyTime(MyDate.getCurTime());
@@ -104,6 +100,7 @@ public class Disk {
         mainTain();
     }
 
+    @Deprecated
     synchronized public void deleteFileDirectory(String pos, String name) throws NoFileException, IOException, ClassNotFoundException, NoAccessException {
         if (!canWrite(pos))
             throw new NoAccessException();
@@ -121,6 +118,7 @@ public class Disk {
             throw new NoAccessException();
         pos = getRealPos(pos);
         MyFile file = userDisk.deleteFileDirectory(id, name);
+        DataBase.replaceMyFile(file.getId(),file);
         MyFile[] myFiles = file.toArray();
         for (MyFile myFile : myFiles) {
             DataBase.deleteFile(myFile.getId());
@@ -128,6 +126,7 @@ public class Disk {
         mainTain();
     }
 
+    @Deprecated
     synchronized public void deleteFile(String pos, String name) throws NoFileException, IOException, NoAccessException {
         if (!canWrite(pos))
             throw new NoAccessException();
@@ -148,6 +147,7 @@ public class Disk {
         mainTain();
     }
 
+    @Deprecated
     synchronized public void renameFile(String pos, String name, String newName) throws NoFileException, FileExistedException, IOException, NoAccessException {
         if (!canWrite(pos))
             throw new NoAccessException();
@@ -159,6 +159,7 @@ public class Disk {
         } catch (NoFileException e) {
             MyFile file = userDisk.renameFile(pos, name, newName);
             file.sonFile.get(newName).setName(newName);
+            DataBase.replaceMyFile(file.getId(),file);
             RealDisk.renameFile(id, file.sonFile.get(newName));
             DataBase.deleteFile(id);
             DataBase.addFile(file.sonFile.get(newName));
@@ -172,11 +173,13 @@ public class Disk {
         MyFile file = userDisk.renameFile(id, name, newName);
         file.sonFile.get(newName).setName(newName);
         RealDisk.renameFile(id, file.sonFile.get(newName));
+        DataBase.replaceMyFile(file.getId(),file);
         DataBase.deleteFile(file.sonFile.get(newName).getId());
-        DataBase.addFile(file.sonFile.get(newName));
+        DataBase.addFile(file.sonFile.get(newName),true);
         mainTain();
     }
 
+    @Deprecated
     synchronized public void renameFileDirectory(String pos, String name, String newName) throws NoFileException, FileExistedException, IOException, NoAccessException {
         if (!canWrite(pos))
             throw new NoAccessException();
@@ -203,6 +206,7 @@ public class Disk {
         file.sonDirectory.get(newName).setName(newName);
         file.sonDirectory.get(newName).setModifyTime(MyDate.getCurTime());
         DataBase.addFile(file.sonDirectory.get(newName));
+        DataBase.replaceMyFile(file.getId(),file);
         mainTain();
     }
 
@@ -212,6 +216,7 @@ public class Disk {
         pos = getRealPos(pos);
         MyFile my = userDisk.createFile(pos, name);
         my.sonFile.get(name).setModifyTime(MyDate.getCurTime());
+        DataBase.replaceMyFile(my.getId(),my);
         DataBase.addFile(my.sonFile.get(name));
         File file = new File(Disk.LOCATION + "_" + my.getId() + "_" + my.getName());
         file.createNewFile();
@@ -225,6 +230,7 @@ public class Disk {
         MyFile my = userDisk.createFile(id, name);
         my.sonFile.get(name).setModifyTime(MyDate.getCurTime());
         DataBase.addFile(my.sonFile.get(name));
+        DataBase.replaceMyFile(my.getId(),my);
         my = my.sonFile.get(name);
         File file = new File(Disk.LOCATION + "_" + my.getId() + "_" + my.getName());
         file.createNewFile();
@@ -249,6 +255,7 @@ public class Disk {
         return userName;
     }
 
+    @Deprecated
     synchronized public int readByteOfFile(long id, String pos, String name, byte[] buffer, int begin, int length) throws NoAccessException, NoFileException, IOException {
         if (!canRead(pos))
             throw new NoAccessException();
@@ -257,6 +264,7 @@ public class Disk {
         return RealDisk.readByteOfFile(myFile, buffer, begin, begin + length);
     }
 
+    @Deprecated
     synchronized public void writeByteOfFile(long id, String pos, String name, byte[] buffer, int begin, int length) throws NoAccessException, NoFileException, IOException {
         if (!canWrite(pos))
             throw new NoAccessException();
@@ -363,9 +371,15 @@ public class Disk {
         mainTain();
     }
 
+    public long getSize(){
+        return this.userDisk.getRoot().getSize();
+    }
+
     synchronized public MyFile getFileById(String pos, long id) throws NoAccessException, NoFileException {
         if (!canRead(pos))
             throw new NoAccessException();
+        return DataBase.getMyFileById(id);
+        /*
         MyFile myFile = userDisk.getRoot();
         MyFile[] myFiles = myFile.toArray();
         for (MyFile mf : myFiles) {
@@ -373,6 +387,8 @@ public class Disk {
                 return mf;
         }
         throw new NoFileException();
+
+         */
     }
 
 

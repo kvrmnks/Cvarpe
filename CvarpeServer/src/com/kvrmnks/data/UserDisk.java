@@ -7,13 +7,20 @@ import com.kvrmnks.exception.NoUserException;
 import java.io.*;
 import java.util.StringTokenizer;
 
-public class UserDisk {
+public class UserDisk implements Serializable{
     private MyFile root;
     private MyFile tmpFile;
 
-    private UserDisk() {
+    public UserDisk(){
+
     }
 
+    public UserDisk(MyFile root) {
+        this.root = root;
+        this.tmpFile = root;
+    }
+
+    @Deprecated
     public static UserDisk getUserDiskByName(String name) throws NoUserException, NoFileException, IOException, ClassNotFoundException {
         UserDisk ret = new UserDisk();
         long id = DataBase.getRoot(name);
@@ -23,6 +30,7 @@ public class UserDisk {
         return ret;
     }
 
+    @Deprecated
     public static UserDisk getUserDiskByFileId(long fileId) throws IOException, NoFileException, ClassNotFoundException {
         MyFile my = RealDisk.getFileById(fileId);
         UserDisk userDisk = new UserDisk();
@@ -68,7 +76,7 @@ public class UserDisk {
         }
     }
 
-    public MyFile createFileDirectory(long id,String name) throws NoFileException, FileExistedException { ;
+    public MyFile createFileDirectory(long id,String name) throws NoFileException, FileExistedException {
         MyFile myFile = root.getById(id);
         if(myFile == null)
             throw new NoFileException();
@@ -115,6 +123,7 @@ public class UserDisk {
         }
     }
 
+    @Deprecated
     public MyFile deleteFile(String pos, String name) throws NoFileException {
         tmpFile = root;
         StringTokenizer st = new StringTokenizer(pos, "/");
@@ -129,18 +138,22 @@ public class UserDisk {
         }
     }
 
+
     public MyFile deleteFile(long id,String name) throws NoFileException {
         tmpFile = root.getById(id);
         if(tmpFile == null) throw  new NoFileException();
         if (tmpFile.sonFile.containsKey(name)) {
             MyFile file = tmpFile.sonFile.get(name);
             tmpFile.sonFile.remove(name);
+            DataBase.replaceMyFile(file.getId(),file);
+            //root.mainTain();
             return file;
         } else {
             throw new NoFileException();
         }
     }
 
+    @Deprecated
     public MyFile deleteFileDirectory(String pos, String name) throws NoFileException {
         tmpFile = root;
         StringTokenizer st = new StringTokenizer(pos, "/");
@@ -155,6 +168,7 @@ public class UserDisk {
         }
     }
 
+
     public MyFile deleteFileDirectory(long id,String name) throws NoFileException {
         tmpFile = root.getById(id);
         if(tmpFile == null) throw new NoFileException();
@@ -167,6 +181,7 @@ public class UserDisk {
         }
     }
 
+    @Deprecated
     public MyFile renameFile(String pos, String name, String newName) throws NoFileException, FileExistedException {
         tmpFile = root;
         StringTokenizer st = new StringTokenizer(pos, "/");
@@ -197,6 +212,7 @@ public class UserDisk {
         }
     }
 
+    @Deprecated
     public MyFile renameFileDirectory(String pos, String name, String newName) throws NoFileException, FileExistedException {
         tmpFile = root;
         StringTokenizer st = new StringTokenizer(pos, "/");
@@ -239,14 +255,17 @@ public class UserDisk {
     }
 
     public long getFileId(long id,String name) throws NoFileException {
-        tmpFile = root.getById(id);
+
+
+        //tmpFile = root.getById(id);
+        tmpFile = DataBase.getMyFileById(id);
         if (tmpFile.sonFile.containsKey(name)) {
             return tmpFile.sonFile.get(name).getId();
         } else {
             throw new NoFileException();
         }
     }
-
+    @Deprecated
     public long getFileDirectoryId(String pos, String name) throws NoFileException {
         tmpFile = root;
         StringTokenizer st = new StringTokenizer(pos, "/");
@@ -268,6 +287,7 @@ public class UserDisk {
         }
     }
 
+    @Deprecated
     public MyFile getStructure(String pos) throws NoFileException {
         tmpFile = root;
         StringTokenizer st = new StringTokenizer(pos, "/");

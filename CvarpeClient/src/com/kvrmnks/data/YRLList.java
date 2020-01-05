@@ -2,13 +2,14 @@ package com.kvrmnks.data;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Vector;
 
 public class YRLList implements Serializable{
     private YRLList(String name){
         this.name = name;
     }
     private String name;
-    private ArrayList<YRL> yrlArrayList =  new ArrayList<>();
+    private Vector<YRL> yrlArrayList =  new Vector<>();
 
     public static YRLList getByUserName(String name){
         final YRLList ret ;//= new YRLList();
@@ -57,11 +58,11 @@ public class YRLList implements Serializable{
         return ret;
     }
 
-    public ArrayList<YRL> getYrlArrayList() {
+    public Vector<YRL> getYrlArrayList() {
         return yrlArrayList;
     }
 
-    public void setYrlArrayList(ArrayList<YRL> yrlArrayList) {
+    public void setYrlArrayList(Vector<YRL> yrlArrayList) {
         this.yrlArrayList = yrlArrayList;
     }
 
@@ -74,4 +75,7 @@ public class YRLList implements Serializable{
       //  save();
     }
 
+    public void clear(){
+        yrlArrayList.clear();
+    }
 }

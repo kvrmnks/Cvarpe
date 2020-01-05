@@ -3,6 +3,7 @@ package com.kvrmnks;
 import com.kvrmnks.UI.BuilderController;
 import com.kvrmnks.UI.MainController;
 import com.kvrmnks.data.DataBase;
+import com.kvrmnks.exception.Log;
 import com.kvrmnks.net.Server;
 import com.kvrmnks.net.ServerReader;
 import com.kvrmnks.net.ServerWriter;
@@ -12,6 +13,7 @@ import javafx.fxml.Initializable;
 import javafx.fxml.JavaFXBuilderFactory;
 import javafx.scene.Scene;
 import javafx.scene.control.TabPane;
+import javafx.scene.image.Image;
 import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
 import java.io.InputStream;
@@ -77,6 +79,7 @@ public class Main extends Application {
     public void start(Stage primaryStage) throws Exception {
         stage = primaryStage;
         stage.setTitle("Cvarpe");
+        primaryStage.getIcons().add(new Image("/logo.jpg"));
         setBuilderForm();
         stage.show();
         stage.setOnCloseRequest(event -> System.exit(0));
@@ -95,6 +98,8 @@ public class Main extends Application {
         try {
             MainController mc = (MainController) replaceSceneContentForTab("MainFXML.fxml");
             mc.setApp(this);
+            Log.mainController = mc;
+
             LocateRegistry.createRegistry(ss.getLocalPort());
             Naming.rebind("rmi://localhost:"+ss.getLocalPort()+"/Server",new Server(mc));
             Naming.rebind("rmi://localhost:"+ss.getLocalPort()+"/ServerReader",new ServerReader());

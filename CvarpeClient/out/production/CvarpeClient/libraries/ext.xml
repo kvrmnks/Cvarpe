@@ -1,0 +1,20 @@
+<component name="libraryTable">
+  <library name="ext">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/out/artifacts/CvarpeClient/bundles/CvarpeClient/runtime/lib/ext/sunpkcs11.jar!/" />
+      <root url="jar://$PROJECT_DIR$/out/artifacts/CvarpeClient/bundles/CvarpeClient/runtime/lib/ext/jaccess.jar!/" />
+      <root url="jar://$PROJECT_DIR$/out/artifacts/CvarpeClient/bundles/CvarpeClient/runtime/lib/ext/dnsns.jar!/" />
+      <root url="jar://$PROJECT_DIR$/out/artifacts/CvarpeClient/bundles/CvarpeClient/runtime/lib/ext/jfxrt.jar!/" />
+      <root url="jar://$PROJECT_DIR$/out/artifacts/CvarpeClient/bundles/CvarpeClient/runtime/lib/ext/zipfs.jar!/" />
+      <root url="jar://$PROJECT_DIR$/out/artifacts/CvarpeClient/bundles/CvarpeClient/runtime/lib/ext/sunmscapi.jar!/" />
+      <root url="jar://$PROJECT_DIR$/out/artifacts/CvarpeClient/bundles/CvarpeClient/runtime/lib/ext/sunjce_provider.jar!/" />
+      <root url="jar://$PROJECT_DIR$/out/artifacts/CvarpeClient/bundles/CvarpeClient/runtime/lib/ext/localedata.jar!/" />
+      <root url="jar://$PROJECT_DIR$/out/artifacts/CvarpeClient/bundles/CvarpeClient/runtime/lib/ext/access-bridge-64.jar!/" />
+      <root url="jar://$PROJECT_DIR$/out/artifacts/CvarpeClient/bundles/CvarpeClient/runtime/lib/ext/cldrdata.jar!/" />
+      <root url="jar://$PROJECT_DIR$/out/artifacts/CvarpeClient/bundles/CvarpeClient/runtime/lib/ext/nashorn.jar!/" />
+      <root url="jar://$PROJECT_DIR$/out/artifacts/CvarpeClient/bundles/CvarpeClient/runtime/lib/ext/sunec.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

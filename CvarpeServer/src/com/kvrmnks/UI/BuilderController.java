@@ -39,7 +39,7 @@ public class BuilderController implements Initializable {
         ArrayList<String> ports = DataBase.getPorts();
         for (String x : ports)
             portTextField.getItems().add(x);
-
+        portTextField.setValue(DataBase.getPreferredPort());
     }
 
     public void setApp(Main app) {
@@ -56,15 +56,15 @@ public class BuilderController implements Initializable {
         try {
             ServerSocket ss = new ServerSocket(Integer.parseInt((String) portTextField.getValue()));
             ss.close();
-            if (!DataBase.getPorts().contains((String) portTextField.getValue()))
+            if (!DataBase.getPorts().contains(portTextField.getValue()))
                 DataBase.getPorts().add((String) portTextField.getValue());
+            DataBase.setPreferredPort((String)portTextField.getValue());
             application.setMainForm(ss);
         } catch (NumberFormatException e) {
             MyDialog.showErrorAlert("端口格式有误");
         } catch (IOException e) {
             MyDialog.showInformationAlert("无法建立服务器");
         } catch (Exception e) {
-            ;
         }
     }
 

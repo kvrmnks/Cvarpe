@@ -6,9 +6,9 @@ import java.rmi.Remote;
 import java.rmi.RemoteException;
 
 public interface NetWriter extends Remote {
-    void setFile(long id, String name) throws RuntimeException, FileNotFoundException, RemoteException;
+    void setFile(long id, String name) throws RuntimeException, IOException;
 
-    void close() throws RemoteException, IOException;
+    void close(long id) throws RemoteException, IOException;
 
-    void write(byte[] buffer, int begin, int length) throws RuntimeException, IOException;
+    void write(long id,byte[] buffer, int begin, int length) throws RuntimeException, IOException;
 }

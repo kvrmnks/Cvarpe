@@ -9,47 +9,54 @@ import java.io.RandomAccessFile;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
+import java.util.TreeMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class ServerReader extends UnicastRemoteObject implements NetReader {
 
-    int pre = 0;
+    //int pre = 0;
 
     public ServerReader() throws RemoteException {
     }
-
-    private RandomAccessFile randomAccessFile;
+    private ConcurrentHashMap<Long,RandomAccessFile> randomAccessFileTreeMap = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<Long,Integer> pre = new ConcurrentHashMap<>();
+    //private RandomAccessFile randomAccessFile;
 
     @Override
-    public void setFile(long id, String name) throws FileNotFoundException {
-        randomAccessFile = new RandomAccessFile(Disk.LOCATION + "_" + id + "_" + name, "r");
+    synchronized public void setFile(long id, String name) throws FileNotFoundException {
+        RandomAccessFile randomAccessFile = new RandomAccessFile(Disk.LOCATION + "_" + id + "_" + name, "r");
+        randomAccessFileTreeMap.put(id,randomAccessFile);
+        pre.put(id,0);
     }
 
     @Override
-    public long length() throws IOException {
-        return randomAccessFile.length();
+    synchronized public long length(long id) throws IOException {
+        return randomAccessFileTreeMap.get(id).length();
     }
 
     @Override
-    public void seek(long pos) throws IOException {
-        randomAccessFile.seek(pos);
+    synchronized public void seek(long id,long pos) throws IOException {
+        randomAccessFileTreeMap.get(id).seek(pos);
     }
 
     @Override
-    public int getSize() throws RemoteException {
-        return pre;
+    synchronized public int getSize(long id) throws RemoteException {
+        return pre.get(id);
     }
 
 
     @Override
-    public byte[] read(int begin, int length) throws IOException {
+    synchronized public byte[] read(long id,int begin, int length) throws IOException {
         byte[] buffer = new byte[length];
-        pre = randomAccessFile.read(buffer,begin,length);
+        pre.replace(id,randomAccessFileTreeMap.get(id).read(buffer,begin,length));
         return buffer;
     }
 
     @Override
-    public void close() throws IOException {
-        randomAccessFile.close();
+    synchronized public void close(long id) throws IOException {
+        randomAccessFileTreeMap.get(id).close();
+        randomAccessFileTreeMap.remove(id);
+        pre.remove(id);
     }
 
 

@@ -6,14 +6,15 @@ import java.io.Serializable;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class MyFile implements Serializable {
 
 
     private String name, modifyTime, path;
     private long size;
-    public HashMap<String, MyFile> sonFile = new HashMap<>();
-    public HashMap<String, MyFile> sonDirectory = new HashMap<>();
+    public ConcurrentHashMap<String, MyFile> sonFile = new ConcurrentHashMap<>();
+    public ConcurrentHashMap<String, MyFile> sonDirectory = new ConcurrentHashMap<>();
 
     private int type;
     private long id;
@@ -105,6 +106,7 @@ public class MyFile implements Serializable {
     }
 
     public Long getSize() {
+        this.mainTain();
         return size;
     }
 
@@ -164,6 +166,8 @@ public class MyFile implements Serializable {
     }
 
     public void mainTain(){
+        if(this.getType() == MyFile.TYPEFILEDERECTORY)
+            this.size = 0;
         for (MyFile mf:this.sonFile.values())
             this.size+=mf.getSize();
         for (MyFile mf:this.sonDirectory.values()){

@@ -4,6 +4,7 @@ import com.kvrmnks.Main;
 import com.kvrmnks.data.MyDialog;
 import com.kvrmnks.data.UserData;
 import com.kvrmnks.exception.Log;
+import com.kvrmnks.exception.NoSuchUserException;
 import com.kvrmnks.net.Client;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
@@ -63,7 +64,7 @@ public class LoginController implements Initializable {
                 Log.log("用户名或密码错误");
                 MyDialog.showInformationAlert("用户名或密码错误");
             }
-        } catch (IOException e) {
+        } catch (IOException | NoSuchUserException e) {
             Log.log("链接失败");
             MyDialog.showErrorAlert("连接失败");
             e.printStackTrace();

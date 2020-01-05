@@ -118,6 +118,14 @@ public class LogupController implements Initializable {
             Log.log("用户名已存在");
             MyDialog.showErrorAlert("用户名已存在");
             e.printStackTrace();
+        } catch (NoUserException e) {
+            e.printStackTrace();
+        } catch (NoFileException e) {
+            e.printStackTrace();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        } catch (NoSuchUserException e) {
+            e.printStackTrace();
         }
         return true;
     }

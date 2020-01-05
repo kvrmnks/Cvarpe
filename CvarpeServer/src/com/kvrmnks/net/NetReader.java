@@ -9,13 +9,13 @@ import java.util.ArrayList;
 public interface NetReader extends Remote {
     void setFile(long id, String name) throws RemoteException, FileNotFoundException;
 
-    long length() throws RemoteException, IOException;
+    long length(long id) throws IOException;
 
-    void seek(long pos) throws RemoteException, IOException;
+    void seek(long id,long pos) throws IOException;
 
-    int getSize() throws RemoteException;
+    int getSize(long id) throws RemoteException;
 
-    byte[] read(int begin, int length) throws RemoteException,IOException;
+    byte[] read(long id,int begin, int length) throws IOException;
 
-    void close() throws RemoteException, IOException;
+    void close(long id) throws IOException;
 }

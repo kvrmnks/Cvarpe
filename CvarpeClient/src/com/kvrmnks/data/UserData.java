@@ -1,10 +1,18 @@
 package com.kvrmnks.data;
 
+import com.kvrmnks.exception.NoSuchUserException;
+import com.kvrmnks.net.Net;
+import com.kvrmnks.net.NetReader;
+import com.kvrmnks.net.NetWriter;
+import com.kvrmnks.net.sync;
 import sun.security.x509.OIDMap;
 
 import java.io.*;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Vector;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class UserData {
     private static String userName;
@@ -14,13 +22,19 @@ public class UserData {
     private static final String PERFERRED_IP = "__perferred_ip__.db";
     private static final String PERFERRED_PORT = "__perferrred_port__.db";
     private static final String USERDB = "__user__database__.db";
+    private static final String BINDDB = "__binding_data__.db";
 
 
-    private static HashMap<String,String> userDB;
+    private static ConcurrentHashMap<String,String> userDB;
     private static String previousUserName;
-    private static ArrayList<String> preferredIp;
-    private static ArrayList<String> preferredPort;
+    private static Vector<String> preferredIp;
+    private static Vector<String> preferredPort;
+    private static ConcurrentHashMap<String, ArrayList<sync>> bindingDB;
     private static String previousIp,previousPort;
+    public static NetReader serverReader;
+    public static NetWriter serverWriter;
+    public static Net server;
+
 
     static{
 
@@ -28,14 +42,14 @@ public class UserData {
         if(file.exists()){
             try {
                 ObjectInputStream objectInputStream = new ObjectInputStream(new FileInputStream(file));
-                preferredIp = (ArrayList<String>)objectInputStream.readObject();
+                preferredIp = (Vector<String>)objectInputStream.readObject();
                 previousIp = (String)objectInputStream.readObject();
                 objectInputStream.close();
             } catch (IOException | ClassNotFoundException e) {
                 e.printStackTrace();
             }
         }else{
-            preferredIp = new ArrayList<>();
+            preferredIp = new Vector<>();
             previousIp = "";
         }
 
@@ -43,13 +57,13 @@ public class UserData {
         if(file.exists()){
             try {
                 ObjectInputStream objectInputStream = new ObjectInputStream(new FileInputStream(file));
-                preferredPort = (ArrayList<String>) objectInputStream.readObject();
+                preferredPort = (Vector<String>) objectInputStream.readObject();
                 previousPort = (String) objectInputStream.readObject();
             } catch (IOException | ClassNotFoundException e) {
                 e.printStackTrace();
             }
         }else{
-            preferredPort = new ArrayList<>();
+            preferredPort = new Vector<>();
             previousPort = "";
         }
 
@@ -57,16 +71,31 @@ public class UserData {
         if(file.exists()){
             try {
                 ObjectInputStream objectInputStream = new ObjectInputStream(new FileInputStream(file));
-                userDB = (HashMap<String, String>) objectInputStream.readObject();
+                userDB = (ConcurrentHashMap<String, String>) objectInputStream.readObject();
                 previousUserName = (String) objectInputStream.readObject();
                 objectInputStream.close();
             } catch (IOException | ClassNotFoundException e) {
                 e.printStackTrace();
             }
         }else{
-            userDB = new HashMap<>();
+            userDB = new ConcurrentHashMap<>();
             previousUserName = "";
         }
+/*
+        file = new File(BINDDB);
+        if(file.exists()){
+            try {
+                ObjectInputStream objectInputStream = new ObjectInputStream(new FileInputStream(file));
+                bindingDB = (HashMap<String, ArrayList<sync>>) objectInputStream.readObject();
+                objectInputStream.close();
+            } catch (IOException | ClassNotFoundException e) {
+                e.printStackTrace();
+            }
+        }else{
+            bindingDB = new HashMap<>();
+        }
+
+ */
     }
 
     public static void writePreferredIp(){
@@ -111,17 +140,31 @@ public class UserData {
         }
     }
 
+    public static void writeBindDB(){
+        File file = new File(BINDDB);
+        if(file.exists())
+            file.delete();
+        try{
+            ObjectOutputStream objectOutputStream = new ObjectOutputStream(new FileOutputStream(file));
+            objectOutputStream.writeObject(bindingDB);
+            objectOutputStream.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     public static void save(){
         writePreferredIp();
         writePreferredPort();
         writeUserDB();
+      //  writeBindDB();
     }
 
-    public static HashMap<String, String> getUserDB() {
+    public static ConcurrentHashMap<String, String> getUserDB() {
         return userDB;
     }
 
-    public static void setUserDB(HashMap<String, String> userDB) {
+    public static void setUserDB(ConcurrentHashMap<String, String> userDB) {
         UserData.userDB = userDB;
     }
 
@@ -149,19 +192,19 @@ public class UserData {
         UserData.previousPort = previousPort;
     }
 
-    public static ArrayList<String> getPreferredIp() {
+    public static Vector<String> getPreferredIp() {
         return preferredIp;
     }
 
-    public static void setPreferredIp(ArrayList<String> preferredIp) {
+    public static void setPreferredIp(Vector<String> preferredIp) {
         UserData.preferredIp = preferredIp;
     }
 
-    public static ArrayList<String> getPreferredPort() {
+    public static Vector<String> getPreferredPort() {
         return preferredPort;
     }
 
-    public static void setPreferredPort(ArrayList<String> preferredPort) {
+    public static void setPreferredPort(Vector<String> preferredPort) {
         UserData.preferredPort = preferredPort;
     }
 
@@ -203,5 +246,20 @@ public class UserData {
 
     public static void setWriterIp(String writerIp) {
         UserData.writerIp = writerIp;
+    }
+
+    public static ArrayList<sync> getBindingListByName(String name) throws NoSuchUserException {
+        if(bindingDB == null)
+            bindingDB = new ConcurrentHashMap<>();
+        if(!bindingDB.containsKey(name)){
+            bindingDB.put(name,new ArrayList<sync>());
+        }
+        return bindingDB.get(name);
+    }
+
+    public static void addBindingListByName(String name,sync x) throws NoSuchUserException {
+        if(!bindingDB.containsKey(name))
+            throw new NoSuchUserException();
+        bindingDB.get(name).add(x);
     }
 }

@@ -1,6 +1,7 @@
 package com.kvrmnks.data;
 
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
 public class Base64Converter {
@@ -10,22 +11,14 @@ public class Base64Converter {
 
     public static String encode(String text) {
         byte[] textByte = new byte[0];
-        try {
-            textByte = text.getBytes("UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        }
+        textByte = text.getBytes(StandardCharsets.UTF_8);
         String encodedText = encoder.encodeToString(textByte);
         return encodedText;
     }
 
     public static String decode(String encodedText) {
         String text = null;
-        try {
-            text = new String(decoder.decode(encodedText), "UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        }
+        text = new String(decoder.decode(encodedText), StandardCharsets.UTF_8);
         return text;
     }
 

@@ -4,10 +4,9 @@ import com.kvrmnks.data.MyDate;
 import com.kvrmnks.data.MyFile;
 import com.kvrmnks.data.SimpleLogListProperty;
 import com.kvrmnks.data.UserData;
-import com.kvrmnks.exception.Log;
-import com.kvrmnks.exception.NoAccessException;
-import com.kvrmnks.exception.NoFileException;
-import com.kvrmnks.exception.NoUserException;
+import com.kvrmnks.exception.*;
+import javafx.application.Platform;
+import sun.awt.PlatformFont;
 import sun.java2d.pipe.BufferedPaints;
 
 import java.io.*;
@@ -29,6 +28,7 @@ public class DownLoader extends TransLoader implements Runnable, Serializable {
     private long curSize, wholeSize;
     private NetReader serverReader;
     private boolean isEqual = true;
+    private long heart_id;
 
     public DownLoader(long id, String pos, String name, String realPos, SimpleLogListProperty simpleLogListProperty) {
         this.id = id;
@@ -39,9 +39,9 @@ public class DownLoader extends TransLoader implements Runnable, Serializable {
         modifyTime = "";
     }
 
-    private void init() throws IOException, NotBoundException, ClassNotFoundException, NoUserException, NoAccessException, NoFileException {
-        server = (Net) Naming.lookup(UserData.getServerIp());
-        serverReader = (NetReader) Naming.lookup(UserData.getReaderIp());
+    public void init() throws IOException, NotBoundException, ClassNotFoundException, NoUserException, NoAccessException, NoFileException, NoSuchUserException {
+        server = UserData.server;
+        serverReader = UserData.serverReader;
         buildFile();
 
         MyFile myFile = server.getStructure(id, pos);
@@ -63,7 +63,10 @@ public class DownLoader extends TransLoader implements Runnable, Serializable {
 
         wholeSize = myFile.getSize();
         serverReader.setFile(myFile.getId(),myFile.getName());
-        serverReader.seek(curSize);
+
+        heart_id = myFile.getId();
+
+        serverReader.seek(heart_id,curSize);
 
 
         simpleLogListProperty.setProcess(((double) curSize) / ((double) myFile.getSize()));
@@ -72,15 +75,16 @@ public class DownLoader extends TransLoader implements Runnable, Serializable {
     private void buildFile() throws IOException {
         realFile = new File(realPos);
         infoFile = new File(realPos + ".info");
+        System.out.println(realPos + ".info");
         if (!realFile.exists()) realFile.createNewFile();
         else{
             curSize = realFile.length();
         }
         if (!infoFile.exists()) infoFile.createNewFile();
         else {
-            Scanner scan = new Scanner(realFile);
-            if (scan.hasNext())
-                modifyTime = scan.next();
+            Scanner scan = new Scanner(infoFile);
+            if (scan.hasNextLine())
+                modifyTime = scan.nextLine();
             if (scan.hasNextLong())
                 wholeSize = scan.nextLong();
         }
@@ -107,7 +111,7 @@ public class DownLoader extends TransLoader implements Runnable, Serializable {
                     simpleLogListProperty.setProcess((double) curSize / wholeSize);
                 }
 
-            } catch (ClassNotFoundException | NoUserException | NoFileException | IOException | NoAccessException e) {
+            } catch (ClassNotFoundException | NoUserException | NoFileException | IOException | NoAccessException | NoSuchUserException e) {
                 e.printStackTrace();
                 return;
             }
@@ -132,9 +136,11 @@ public class DownLoader extends TransLoader implements Runnable, Serializable {
         long preData = curSize;
 
         while(curSize < wholeSize && (!flag)){
-            byte[] buffer  = serverReader.read(0,PACKAGE_SIZE);
-            int tmp = serverReader.getSize();
+            byte[] buffer  = serverReader.read(heart_id,0,PACKAGE_SIZE);
+
+            int tmp = serverReader.getSize(heart_id);
             dataOutputStream.write(buffer,0,tmp);
+
             curSize += tmp;
             if ((double) curSize / wholeSize > simpleLogListProperty.getProcess() + 0.01) {
                 simpleLogListProperty.setProcess((double) curSize / wholeSize);
@@ -154,19 +160,28 @@ public class DownLoader extends TransLoader implements Runnable, Serializable {
             simpleLogListProperty.setCondition("完成");
         }
         dataOutputStream.close();
-        serverReader.close();
+        serverReader.close(heart_id);
 
     }
 
     @Override
     public void run() {
         try {
-            Log.log("begin");
+           // Log.log("begin");
             init();
             if(isEqual)
                 transfer();
-            Log.log("inter");
-        } catch (IOException | NotBoundException | NoUserException | NoFileException | NoAccessException | ClassNotFoundException e) {
+          //  Log.log("inter");
+            Platform.runLater(
+                    ()->{
+                        try {
+                            this.mainController.flush();
+                            this.mainController.shareFlush();
+                        } catch (IOException | ClassNotFoundException e) {
+                            e.printStackTrace();
+                        }
+                    });
+        } catch (IOException | NotBoundException | NoUserException | NoFileException | NoAccessException | ClassNotFoundException | NoSuchUserException e) {
             e.printStackTrace();
         }
     }

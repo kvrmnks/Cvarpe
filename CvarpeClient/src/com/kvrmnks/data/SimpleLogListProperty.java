@@ -1,5 +1,7 @@
 package com.kvrmnks.data;
 
+import com.kvrmnks.UI.MainController;
+import com.kvrmnks.exception.*;
 import com.kvrmnks.net.DownLoader;
 import com.kvrmnks.net.TransLoader;
 import com.kvrmnks.net.Uploader;
@@ -11,6 +13,9 @@ import javafx.scene.control.ProgressBar;
 import javafx.scene.control.ProgressIndicator;
 import javafx.scene.layout.HBox;
 import sun.java2d.pipe.SpanShapeRenderer;
+
+import java.io.IOException;
+import java.rmi.NotBoundException;
 
 public class SimpleLogListProperty {
 
@@ -54,7 +59,7 @@ public class SimpleLogListProperty {
         this.progressBar.progressProperty().bind(this.process);
     }
 
-    public SimpleLogListProperty(YRL yrl){
+    public SimpleLogListProperty(YRL yrl, MainController mainController){
         this.yrl = yrl;
         this.type = new SimpleStringProperty();
         this.name = new SimpleStringProperty();
@@ -76,6 +81,7 @@ public class SimpleLogListProperty {
         }else{
             transLoader = new Uploader(yrl.getId(),yrl.getPos(),yrl.getName(),yrl.getRealPos(),this);
         }
+        transLoader.setMainController(mainController);
         transLoader.stop();
         build();
         if(yrl.isFinished()){condition.setValue("完成");this.setProcess(1);}
@@ -102,6 +108,10 @@ public class SimpleLogListProperty {
         this.progressBar = new ProgressIndicator(process);
         this.transLoader = transLoader;
         build();
+    }
+
+    public void init() throws IOException, NotBoundException, NoUserException, FileExistedException, FileStructureException, NoFileException, NoAccessException, NoSuchUserException, ClassNotFoundException {
+        transLoader.init();
     }
 
     public String getCondition() {
